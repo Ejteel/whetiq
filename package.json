@@ -4,6 +4,8 @@
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "scripts": {
+    "setup": "npm install && npm run doctor",
+    "doctor": "node scripts/doctor.mjs",
     "dev": "npm run build && concurrently -k \"npm:dev:web\" \"npm:dev:desktop\"",
     "dev:web": "npm run -w @mvp/web dev",
     "dev:desktop": "npm run -w @mvp/desktop dev",
