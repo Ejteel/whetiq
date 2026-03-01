@@ -1,0 +1,83 @@
+name: Roadmap task
+about: Track implementation tasks aligned to PRD milestones
+title: "[Roadmap] "
+labels: ["roadmap", "implementation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for execution tasks tied to PRD milestones.
+        Keep scope concrete and shippable.
+
+  - type: input
+    id: objective
+    attributes:
+      label: Objective
+      description: Clear implementation target
+      placeholder: Implement provider failover fallback in chat orchestration
+    validations:
+      required: true
+
+  - type: input
+    id: prd_section
+    attributes:
+      label: PRD Section
+      description: Exact section(s) this task implements
+      placeholder: "7.4 Provider Routing, 12 Observability and Quality"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      options:
+        - Foundation
+        - UI Baseline
+        - Markdown and Typography Polish
+        - Release Packaging
+    validations:
+      required: true
+
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Deliverables
+      description: Concrete code/docs/test outputs expected
+      placeholder: |
+        - Add failover strategy in packages/api/src/chatService.ts
+        - Add adapter health checks
+        - Add tests for fallback behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of Done
+      placeholder: |
+        - Tests added and passing
+        - Build/typecheck pass
+        - Manual QA notes recorded
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Effort Estimate
+      options:
+        - XS (<= 0.5 day)
+        - S (1 day)
+        - M (2-3 days)
+        - L (4-5 days)
+        - XL (1+ week)
+
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk Level
+      options:
+        - Low
+        - Medium
+        - High

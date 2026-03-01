@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Product Requirements Document (PRD)
+    url: https://github.com/Ejteel/aggreate-ai-prompt-enhancer/blob/main/docs/PRODUCT_REQUIREMENTS_DOCUMENT.md
+    about: Review product scope, milestones, and requirements before opening new work.
