@@ -12,6 +12,10 @@ export interface SendOutput {
   transformedPrompt: string;
 }
 
+function isDemoModeEnabled(): boolean {
+  return process.env.DEMO_MODE === "true";
+}
+
 function buildTransformedPrompt(input: SendInput): string {
   const enhancerPrefix = input.enhance
     ? "Apply house style: concise, structured, include assumptions."
@@ -109,8 +113,42 @@ async function sendGemini(model: string, prompt: string, apiKey: string): Promis
   return data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("") ?? "No response content";
 }
 
+function buildDemoResponse(input: SendInput, transformedPrompt: string): SendOutput {
+  const words = input.text.trim().split(/\s+/).filter(Boolean).length;
+  const preview = input.text.trim().slice(0, 180) || "No user input captured.";
+
+  const text = [
+    "## Demo Mode Response",
+    "",
+    "This project is running in demo mode. No provider API keys were used and no external LLM request was made.",
+    "",
+    "### Request Snapshot",
+    `- Provider selected: **${input.provider}**`,
+    `- Model selected: **${input.model}**`,
+    `- Enhancer enabled: **${input.enhance ? "yes" : "no"}**`,
+    `- Word count: **${words}**`,
+    "",
+    "### User Input Preview",
+    `> ${preview}`,
+    "",
+    "### Why this exists",
+    "- Safe for public demos",
+    "- Prevents accidental key usage",
+    "- Preserves full UI/UX behavior"
+  ].join("\n");
+
+  return {
+    text,
+    transformedPrompt
+  };
+}
+
 export async function sendProviderMessage(input: SendInput): Promise<SendOutput> {
   const transformedPrompt = buildTransformedPrompt(input);
+
+  if (isDemoModeEnabled()) {
+    return buildDemoResponse(input, transformedPrompt);
+  }
 
   if (input.provider === "openai") {
     const key = process.env.OPENAI_API_KEY;

@@ -24,6 +24,7 @@ body {
   font-family: "Soehne", "Avenir Next", "Segoe UI", sans-serif;
   font-size: 14px;
   line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
 }
 
 .workspace {

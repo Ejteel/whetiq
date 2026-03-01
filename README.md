@@ -66,6 +66,41 @@ Set API keys before calling providers:
 - `ANTHROPIC_API_KEY`
 - `GEMINI_API_KEY`
 
+## Privacy and Safe Demo Modes
+### 1) Demo mode (no real AI calls)
+Set this before starting web server:
+```bash
+DEMO_MODE=true
+```
+In demo mode, `/api/chat` returns structured mock responses and does not use any provider API key.
+
+### 2) Preview privacy mode selector
+Choose one mode:
+```bash
+PREVIEW_AUTH_MODE=none   # no auth
+PREVIEW_AUTH_MODE=basic  # shared HTTP Basic Auth
+PREVIEW_AUTH_MODE=oauth  # GitHub OAuth (real user accounts)
+```
+
+### 3) Basic Auth gate
+For `PREVIEW_AUTH_MODE=basic`:
+```bash
+PREVIEW_AUTH_USERNAME=your_username
+PREVIEW_AUTH_PASSWORD=your_strong_password
+```
+
+### 4) OAuth login gate (recommended)
+For `PREVIEW_AUTH_MODE=oauth`:
+```bash
+AUTH_SECRET=long_random_secret
+# or use NEXTAUTH_SECRET (same purpose)
+NEXTAUTH_SECRET=long_random_secret
+NEXTAUTH_URL=https://your-deployed-domain.com
+AUTH_GITHUB_ID=github_oauth_app_client_id
+AUTH_GITHUB_SECRET=github_oauth_app_client_secret
+```
+Then users authenticate with GitHub at `/login`. If users have GitHub 2FA enabled, that 2FA is enforced by GitHub during sign-in.
+
 ## Run
 Web app:
 ```bash
@@ -95,6 +130,7 @@ npm test
   - Stop conflicting process or change web port in `apps/web/package.json`.
 - Provider calls fail
   - Verify keys with: `npm run doctor`
+  - Or run without keys using `DEMO_MODE=true`
 
 ## Execution Workflow
 Use GitHub issue templates to execute PRD scope:
