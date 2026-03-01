@@ -87,6 +87,11 @@ body {
   background: #ece6d8;
 }
 
+.navItem.active {
+  background: #e8e1d2;
+  border: 1px solid var(--line-strong);
+}
+
 .recentBlock {
   margin-top: 16px;
   min-height: 0;
@@ -114,11 +119,19 @@ body {
 }
 
 .recentBlock li {
-  padding: 16px 18px;
-  border-radius: 16px;
+  margin: 0;
+}
+
+.recentItem {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 12px 14px;
+  border-radius: 12px;
   color: #3d3a34;
   font-size: 14px;
-  line-height: 1.13;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -210,6 +223,105 @@ body {
   padding: 16px;
   color: var(--muted);
   background: #faf7f0;
+}
+
+.sectionPanel {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  background: #f9f7f1;
+  display: grid;
+  gap: 10px;
+}
+
+.sectionPanel h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.sectionPanel p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.sectionInput {
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fffdf8;
+  font: inherit;
+}
+
+.sectionList {
+  display: grid;
+  gap: 8px;
+}
+
+.sectionCard {
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  background: #f7f3e8;
+  color: #39362f;
+  font: inherit;
+}
+
+.sectionCard.selected {
+  background: #e8e1d2;
+}
+
+.sectionEmpty {
+  border: 1px dashed var(--line-strong);
+  border-radius: 10px;
+  padding: 12px;
+  color: var(--muted);
+}
+
+.sectionGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.sectionGrid label {
+  display: grid;
+  gap: 6px;
+}
+
+.sectionGrid select {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 8px;
+  background: #fffdf8;
+  font: inherit;
+}
+
+.sectionToggle {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+
+.artifactBox {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffdf8;
+  padding: 10px;
+}
+
+.artifactBox h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.artifactBox pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font: inherit;
+  line-height: 1.35;
 }
 
 .bubble {
