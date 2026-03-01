@@ -8,7 +8,14 @@ function getAuthMode(): AuthMode {
   if (mode === "basic" || mode === "oauth" || mode === "none") {
     return mode;
   }
-  return "none";
+
+  const hosted = process.env.VERCEL_ENV === "preview" || process.env.VERCEL_ENV === "production";
+  if (!hosted) {
+    return "none";
+  }
+
+  const isPublicDemo = process.env.DEMO_MODE === "true" && process.env.PUBLIC_DEMO === "true";
+  return isPublicDemo ? "none" : "oauth";
 }
 
 function unauthorizedResponse(): NextResponse {
@@ -18,6 +25,13 @@ function unauthorizedResponse(): NextResponse {
       "WWW-Authenticate": 'Basic realm="Aggreate Preview"'
     }
   });
+}
+
+function applyNoIndex(response: NextResponse): NextResponse {
+  if (process.env.VERCEL_ENV === "preview") {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  }
+  return response;
 }
 
 function isAuthorized(request: NextRequest): boolean {
@@ -54,14 +68,14 @@ function isAuthorized(request: NextRequest): boolean {
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const mode = getAuthMode();
   if (mode === "none") {
-    return NextResponse.next();
+    return applyNoIndex(NextResponse.next());
   }
 
   if (mode === "basic") {
     if (isAuthorized(request)) {
-      return NextResponse.next();
+      return applyNoIndex(NextResponse.next());
     }
-    return unauthorizedResponse();
+    return applyNoIndex(unauthorizedResponse());
   }
 
   const path = request.nextUrl.pathname;
@@ -69,7 +83,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     path === "/login" || path.startsWith("/api/auth/") || path.startsWith("/_next/") || path === "/favicon.ico";
 
   if (isPublic) {
-    return NextResponse.next();
+    return applyNoIndex(NextResponse.next());
   }
 
   const token = await getToken({
@@ -77,12 +91,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET
   });
   if (token) {
-    return NextResponse.next();
+    return applyNoIndex(NextResponse.next());
   }
 
   const loginUrl = new URL("/login", request.url);
   loginUrl.searchParams.set("callbackUrl", path || "/");
-  return NextResponse.redirect(loginUrl);
+  return applyNoIndex(NextResponse.redirect(loginUrl));
 }
 
 export const config = {

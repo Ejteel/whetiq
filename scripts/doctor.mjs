@@ -5,6 +5,8 @@ import process from "node:process";
 const required = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY"];
 const nodeMajor = Number(process.versions.node.split(".")[0]);
 const authMode = process.env.PREVIEW_AUTH_MODE ?? "none";
+const hosted = process.env.VERCEL_ENV === "preview" || process.env.VERCEL_ENV === "production";
+const publicDemo = process.env.DEMO_MODE === "true" && process.env.PUBLIC_DEMO === "true";
 
 let failed = false;
 
@@ -35,6 +37,11 @@ if (!["none", "basic", "oauth"].includes(authMode)) {
   failed = true;
 }
 
+if (hosted && authMode === "none" && !publicDemo) {
+  console.warn("! Hosted deployment with PREVIEW_AUTH_MODE=none is not recommended.");
+  console.warn("  Use PREVIEW_AUTH_MODE=oauth or set DEMO_MODE=true and PUBLIC_DEMO=true for public demos.");
+}
+
 if (authMode === "basic") {
   const missingBasic = ["PREVIEW_AUTH_USERNAME", "PREVIEW_AUTH_PASSWORD"].filter((name) => !process.env[name]);
   if (missingBasic.length) {
@@ -52,6 +59,9 @@ if (authMode === "oauth") {
   const missingOAuth = ["AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET"].filter((name) => !process.env[name]);
   if (!hasSecret) {
     missingOAuth.unshift("AUTH_SECRET or NEXTAUTH_SECRET");
+  }
+  if (!process.env.NEXTAUTH_URL && hosted) {
+    missingOAuth.unshift("NEXTAUTH_URL");
   }
   if (missingOAuth.length) {
     console.warn("! PREVIEW_AUTH_MODE=oauth but missing:");

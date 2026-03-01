@@ -101,6 +101,28 @@ AUTH_GITHUB_SECRET=github_oauth_app_client_secret
 ```
 Then users authenticate with GitHub at `/login`. If users have GitHub 2FA enabled, that 2FA is enforced by GitHub during sign-in.
 
+## Vercel Deployment (Secure Defaults)
+Use one Vercel project with environment-specific variables:
+
+- `Preview` environment: protected stakeholder preview
+- `Production` environment: either protected live app or public demo
+
+`PREVIEW_AUTH_MODE` behavior:
+- If set, uses your explicit value.
+- If unset on Vercel:
+  - defaults to `oauth`
+  - defaults to `none` only when `DEMO_MODE=true` and `PUBLIC_DEMO=true`
+
+Deployment matrix:
+
+| Scenario | Env vars |
+|---|---|
+| Private preview (recommended) | `PREVIEW_AUTH_MODE=oauth`, `AUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET` |
+| Private production | same as private preview, plus provider API keys |
+| Public safe demo | `DEMO_MODE=true`, `PUBLIC_DEMO=true`, leave provider keys unset |
+
+For full step-by-step setup, see [docs/DEPLOYMENT_VERCEL.md](docs/DEPLOYMENT_VERCEL.md).
+
 ## Run
 Web app:
 ```bash
