@@ -1,0 +1,27 @@
+{
+  "name": "canonical-chat-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "npm run build && concurrently -k \"npm:dev:web\" \"npm:dev:desktop\"",
+    "dev:web": "npm run -w @mvp/web dev",
+    "dev:desktop": "npm run -w @mvp/desktop dev",
+    "build": "tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "test": "node --test tests/*.test.mjs",
+    "lint": "echo 'lint not yet configured'"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "concurrently": "^9.0.1",
+    "typescript": "^5.6.3",
+    "wait-on": "^8.0.1"
+  }
+}

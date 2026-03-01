@@ -1,0 +1,14 @@
+{
+  "name": "@mvp/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@mvp/adapters": "file:../adapters",
+    "@mvp/core": "file:../core",
+    "@mvp/storage": "file:../storage",
+    "keytar": "^7.9.0"
+  }
+}

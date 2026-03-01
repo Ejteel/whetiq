@@ -1,0 +1,15 @@
+{
+  "name": "@mvp/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "dev": "wait-on tcp:3001 && electron .",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "@mvp/api": "file:../../packages/api",
+    "@mvp/storage": "file:../../packages/storage",
+    "electron": "^33.2.0"
+  }
+}

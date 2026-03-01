@@ -1,0 +1,10 @@
+node_modules
+pnpm-lock.yaml
+dist
+.next
+.turbo
+.DS_Store
+*.db
+*.sqlite
+coverage
+*.tsbuildinfo

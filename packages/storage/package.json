@@ -1,0 +1,13 @@
+{
+  "name": "@mvp/storage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@mvp/core": "file:../core",
+    "better-sqlite3": "^11.7.0",
+    "drizzle-orm": "^0.38.2"
+  }
+}
