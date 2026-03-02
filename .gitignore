@@ -8,6 +8,8 @@ dist
 *.sqlite
 coverage
 *.tsbuildinfo
+.env.local
+apps/web/.env.local
 docs/BOARD_MEMO_AGGREATE_AI_PROMPT_ENHANCER.*
 docs/FUNDRAISING_MODEL_AGGREATE_AI_PROMPT_ENHANCER.*
 docs/RAW_MARKET_AND_PRODUCT_VIABILITY_DOSSIER.*

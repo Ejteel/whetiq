@@ -80,7 +80,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   const path = request.nextUrl.pathname;
   const isPublic =
-    path === "/login" || path.startsWith("/api/auth/") || path.startsWith("/_next/") || path === "/favicon.ico";
+    path === "/" ||
+    path === "/login" ||
+    path.startsWith("/api/auth/") ||
+    path.startsWith("/_next/") ||
+    path === "/favicon.ico";
 
   if (isPublic) {
     return applyNoIndex(NextResponse.next());

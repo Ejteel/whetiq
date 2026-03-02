@@ -56,12 +56,17 @@ if (authMode === "basic") {
 
 if (authMode === "oauth") {
   const hasSecret = Boolean(process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET);
-  const missingOAuth = ["AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET"].filter((name) => !process.env[name]);
+  const hasGitHub = Boolean(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET);
+  const hasGoogle = Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
+  const missingOAuth = [];
   if (!hasSecret) {
     missingOAuth.unshift("AUTH_SECRET or NEXTAUTH_SECRET");
   }
   if (!process.env.NEXTAUTH_URL && hosted) {
     missingOAuth.unshift("NEXTAUTH_URL");
+  }
+  if (!hasGitHub && !hasGoogle) {
+    missingOAuth.push("AUTH_GITHUB_ID + AUTH_GITHUB_SECRET or AUTH_GOOGLE_ID + AUTH_GOOGLE_SECRET");
   }
   if (missingOAuth.length) {
     console.warn("! PREVIEW_AUTH_MODE=oauth but missing:");
@@ -69,7 +74,16 @@ if (authMode === "oauth") {
       console.warn(`  - ${key}`);
     }
   } else {
-    console.log("✓ OAuth auth variables detected.");
+    const providers = [hasGitHub ? "GitHub" : null, hasGoogle ? "Google" : null].filter(Boolean).join(", ");
+    console.log(`✓ OAuth auth variables detected (${providers}).`);
+  }
+
+  const hasAllowlist = Boolean(process.env.ALLOWED_EMAILS || process.env.ALLOWED_DOMAINS);
+  if (!hasAllowlist) {
+    console.warn("! OAuth is enabled without ALLOWED_EMAILS/ALLOWED_DOMAINS.");
+    console.warn("  Any authenticated OAuth user will be allowed into private workspace.");
+  } else {
+    console.log("✓ OAuth allowlist configured (ALLOWED_EMAILS and/or ALLOWED_DOMAINS).");
   }
 }
 

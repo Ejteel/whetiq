@@ -27,6 +27,145 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+.landing {
+  min-height: 100vh;
+  padding: clamp(20px, 4vw, 46px);
+  background:
+    radial-gradient(1200px 340px at 10% -5%, #f2ecdf 0, transparent 65%),
+    radial-gradient(1000px 300px at 100% -10%, #ece4d2 0, transparent 62%),
+    var(--bg);
+}
+
+.landingHeader {
+  max-width: 860px;
+}
+
+.landingHeader h1 {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: #1f1e1b;
+}
+
+.landingHeader p {
+  margin: 14px 0 0;
+  font-size: clamp(15px, 1.9vw, 18px);
+  line-height: 1.45;
+  color: #514d44;
+  max-width: 720px;
+}
+
+.eyebrow {
+  margin: 0 0 10px !important;
+  font-size: 12px !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #676151 !important;
+}
+
+.modeRow {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: #5b554a;
+  font-size: 13px;
+}
+
+.modeBadge {
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--line-strong);
+  background: #ebe5d7;
+  color: #3e3a31;
+}
+
+.modeBadge.demo {
+  background: #e7f3ef;
+  border-color: #78b4a5;
+  color: #165c52;
+}
+
+.modeBadge.live {
+  background: #f8e8db;
+  border-color: #d5b79a;
+  color: #734b22;
+}
+
+.accessGrid {
+  margin-top: clamp(18px, 3vw, 32px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.accessCard {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: linear-gradient(180deg, #f8f4ea 0%, #f4efe4 100%);
+  padding: 22px 20px;
+  display: grid;
+  gap: 10px;
+}
+
+.accessCard h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.accessCard p {
+  margin: 0;
+  color: #575247;
+}
+
+.accessCard ul {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 5px;
+  color: #3d3932;
+  font-size: 14px;
+}
+
+.accessPrimary,
+.accessSecondary {
+  margin-top: 4px;
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  padding: 11px 14px;
+}
+
+.accessPrimary {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+}
+
+.accessSecondary {
+  background: #f7f2e7;
+  border: 1px solid var(--line-strong);
+  color: #2f2d27;
+}
+
+.accessMeta {
+  margin: 2px 0 0 !important;
+  font-size: 12px !important;
+  color: #6a6458 !important;
+}
+
 .workspace {
   height: 100vh;
   display: grid;
@@ -600,6 +739,10 @@ button {
 }
 
 @media (max-width: 720px) {
+  .accessGrid {
+    grid-template-columns: 1fr;
+  }
+
   .workspace {
     grid-template-columns: 1fr;
     height: auto;

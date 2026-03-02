@@ -82,7 +82,7 @@ Choose one mode:
 ```bash
 PREVIEW_AUTH_MODE=none   # no auth
 PREVIEW_AUTH_MODE=basic  # shared HTTP Basic Auth
-PREVIEW_AUTH_MODE=oauth  # GitHub OAuth (real user accounts)
+PREVIEW_AUTH_MODE=oauth  # GitHub and/or Google OAuth (real user accounts)
 ```
 
 ### 3) Basic Auth gate
@@ -101,8 +101,17 @@ NEXTAUTH_SECRET=long_random_secret
 NEXTAUTH_URL=https://your-deployed-domain.com
 AUTH_GITHUB_ID=github_oauth_app_client_id
 AUTH_GITHUB_SECRET=github_oauth_app_client_secret
+AUTH_GOOGLE_ID=google_oauth_client_id
+AUTH_GOOGLE_SECRET=google_oauth_client_secret
 ```
-Then users authenticate with GitHub at `/login`. If users have GitHub 2FA enabled, that 2FA is enforced by GitHub during sign-in.
+Then users authenticate at `/login` using any configured OAuth provider. If users have 2FA enabled in GitHub/Google accounts, that 2FA is enforced by the identity provider during sign-in.
+
+Optional allowlist for private pilot access:
+```bash
+ALLOWED_EMAILS=founder@company.com,advisor@gmail.com
+ALLOWED_DOMAINS=company.com,partner.org
+```
+If both are empty, any authenticated OAuth user is allowed.
 
 ## Vercel Deployment (Secure Defaults)
 Use one Vercel project with environment-specific variables:
@@ -120,7 +129,7 @@ Deployment matrix:
 
 | Scenario | Env vars |
 |---|---|
-| Private preview (recommended) | `PREVIEW_AUTH_MODE=oauth`, `AUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET` |
+| Private preview (recommended) | `PREVIEW_AUTH_MODE=oauth`, `AUTH_SECRET`, `NEXTAUTH_URL`, and at least one provider pair: (`AUTH_GITHUB_ID` + `AUTH_GITHUB_SECRET`) or (`AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET`) |
 | Private production | same as private preview, plus provider API keys |
 | Public safe demo | `DEMO_MODE=true`, `PUBLIC_DEMO=true`, leave provider keys unset |
 

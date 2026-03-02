@@ -11,12 +11,20 @@ This guide deploys `apps/web` securely with support for:
 3. Framework preset should resolve to **Next.js**.
 4. Keep install/build defaults (`npm install`, `next build`).
 
-## 2) Configure GitHub OAuth (for private access)
-Create a GitHub OAuth App:
+## 2) Configure OAuth Provider(s) (for private access)
+Configure one or both:
+
+### GitHub OAuth App
 1. GitHub -> Settings -> Developer settings -> OAuth Apps -> New OAuth App.
 2. Add callback URL:
    - Preview: `https://<your-preview-domain>/api/auth/callback/github`
    - Production: `https://<your-prod-domain>/api/auth/callback/github`
+
+### Google OAuth Client
+1. Google Cloud Console -> APIs & Services -> Credentials -> Create OAuth Client ID.
+2. Authorized redirect URIs:
+   - Preview: `https://<your-preview-domain>/api/auth/callback/google`
+   - Production: `https://<your-prod-domain>/api/auth/callback/google`
 
 Add these Vercel env vars (Preview and/or Production):
 - `PREVIEW_AUTH_MODE=oauth`
@@ -24,10 +32,17 @@ Add these Vercel env vars (Preview and/or Production):
 - `NEXTAUTH_URL=https://<environment-domain>`
 - `AUTH_GITHUB_ID=<github oauth client id>`
 - `AUTH_GITHUB_SECRET=<github oauth client secret>`
+- `AUTH_GOOGLE_ID=<google oauth client id>`
+- `AUTH_GOOGLE_SECRET=<google oauth client secret>`
 
 Notes:
 - `AUTH_SECRET` or `NEXTAUTH_SECRET` is required.
-- GitHub 2FA is enforced if the GitHub account has 2FA enabled.
+- Configure at least one provider pair (GitHub or Google).
+- Provider-side 2FA is enforced if the user account has 2FA enabled.
+- Optional but recommended for private pilots:
+  - `ALLOWED_EMAILS` (comma-separated exact emails)
+  - `ALLOWED_DOMAINS` (comma-separated domains)
+  - If both are empty, any authenticated OAuth user is allowed.
 
 ## 3) Choose Deployment Mode
 
@@ -59,7 +74,7 @@ In this mode, `/api/chat` returns mock/demo output and never calls external prov
 After deploy:
 1. Open site home page.
 2. If OAuth mode enabled, verify redirect to `/login`.
-3. Sign in with GitHub.
+3. Sign in with GitHub or Google.
 4. Send chat input and confirm:
    - Demo mode: receives "Demo Mode Response"
    - Real mode: receives provider response
@@ -75,4 +90,3 @@ npm run doctor
 npm run -w @mvp/web build
 npm run -w @mvp/web dev
 ```
-
