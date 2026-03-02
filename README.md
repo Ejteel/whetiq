@@ -14,6 +14,9 @@ npm run -w @mvp/web dev
 ```
 Open `http://localhost:3001`.
 
+## Local Restart Guide (Mac + PC)
+- Simple run/restart troubleshooting: [docs/LOCAL_RUNBOOK_MAC_WINDOWS.md](docs/LOCAL_RUNBOOK_MAC_WINDOWS.md)
+
 ## PRD
 - In-repo PRD (Markdown): [docs/PRODUCT_REQUIREMENTS_DOCUMENT.md](docs/PRODUCT_REQUIREMENTS_DOCUMENT.md)
 - PRD (Word): [docs/PRODUCT_REQUIREMENTS_DOCUMENT.docx](docs/PRODUCT_REQUIREMENTS_DOCUMENT.docx)
