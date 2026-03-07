@@ -1,23 +1,43 @@
 import type { NextAuthOptions } from "next-auth";
-import Auth0Provider from "next-auth/providers/auth0";
+import GitHubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
 import { getRoleByEmail } from "./lib/controlPlane";
 
 function normalizeEmail(input?: string | null): string {
   return input?.trim().toLowerCase() ?? "";
 }
 
+function hasPair(id?: string, secret?: string): boolean {
+  return Boolean(id && secret);
+}
+
+function buildProviders(): NonNullable<NextAuthOptions["providers"]> {
+  const providers: NonNullable<NextAuthOptions["providers"]> = [];
+
+  if (hasPair(process.env.AUTH_GITHUB_ID, process.env.AUTH_GITHUB_SECRET)) {
+    providers.push(
+      GitHubProvider({
+        clientId: process.env.AUTH_GITHUB_ID as string,
+        clientSecret: process.env.AUTH_GITHUB_SECRET as string
+      })
+    );
+  }
+
+  if (hasPair(process.env.AUTH_GOOGLE_ID, process.env.AUTH_GOOGLE_SECRET)) {
+    providers.push(
+      GoogleProvider({
+        clientId: process.env.AUTH_GOOGLE_ID as string,
+        clientSecret: process.env.AUTH_GOOGLE_SECRET as string
+      })
+    );
+  }
+
+  return providers;
+}
+
 export const authOptions: NextAuthOptions = {
   secret: process.env.ADMIN_AUTH_SECRET ?? process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
-  providers:
-    process.env.AUTH0_CLIENT_ID && process.env.AUTH0_CLIENT_SECRET && process.env.AUTH0_ISSUER
-      ? [
-          Auth0Provider({
-            clientId: process.env.AUTH0_CLIENT_ID,
-            clientSecret: process.env.AUTH0_CLIENT_SECRET,
-            issuer: process.env.AUTH0_ISSUER
-          })
-        ]
-      : [],
+  providers: buildProviders(),
   session: { strategy: "jwt" },
   callbacks: {
     async signIn({ user }) {

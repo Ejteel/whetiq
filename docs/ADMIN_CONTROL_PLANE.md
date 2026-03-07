@@ -10,14 +10,19 @@ The admin control plane is a separate app at `apps/admin` intended for `admin.wh
 ## Required Environment Variables
 ```bash
 DATABASE_URL=
-AUTH0_CLIENT_ID=
-AUTH0_CLIENT_SECRET=
-AUTH0_ISSUER=
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
 ADMIN_AUTH_SECRET=
 NEXTAUTH_URL=https://admin.whetiq.com
 ADMIN_SUPER_ADMIN_EMAILS=you@company.com
 CONTROL_PLANE_SERVICE_TOKEN=long_random_shared_token
 ```
+
+OAuth callback URLs:
+- `https://admin.whetiq.com/api/auth/callback/github`
+- `https://admin.whetiq.com/api/auth/callback/google`
 
 ## Migrations
 Run once for each environment before serving traffic:
