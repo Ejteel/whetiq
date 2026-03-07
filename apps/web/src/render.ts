@@ -1,5 +1,8 @@
 import type { ChatViewState } from "./uiModel.js";
 
+type ChatMessage = ChatViewState["messages"][number];
+type ChatContentBlock = ChatMessage["contentBlocks"][number];
+
 function renderLeftRail(): string {
   return [
     "<aside class='left-rail'>",
@@ -23,7 +26,12 @@ function renderRightPanel(state: ChatViewState): string {
 
 export function renderChatView(state: ChatViewState): string {
   const messageItems = state.messages
-    .map((message) => `<li><b>${message.role}</b>: ${message.contentBlocks.map((block) => block.type === "text" ? block.text : `[${block.type}]`).join(" ")}</li>`)
+    .map(
+      (message: ChatMessage) =>
+        `<li><b>${message.role}</b>: ${message.contentBlocks
+          .map((block: ChatContentBlock) => (block.type === "text" ? block.text : `[${block.type}]`))
+          .join(" ")}</li>`
+    )
     .join("");
 
   return [

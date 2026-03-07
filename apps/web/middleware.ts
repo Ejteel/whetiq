@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-type AuthMode = "none" | "basic" | "oauth";
+type AuthMode = "none" | "basic" | "oauth" | "hybrid";
 
 function getAuthMode(): AuthMode {
-  const mode = process.env.PREVIEW_AUTH_MODE;
-  if (mode === "basic" || mode === "oauth" || mode === "none") {
+  const mode = process.env.PRIVATE_AUTH_MODE;
+  if (mode === "basic" || mode === "oauth" || mode === "hybrid" || mode === "none") {
     return mode;
   }
 
@@ -22,7 +22,7 @@ function unauthorizedResponse(): NextResponse {
   return new NextResponse("Authentication required", {
     status: 401,
     headers: {
-      "WWW-Authenticate": 'Basic realm="Aggreate Preview"'
+      "WWW-Authenticate": 'Basic realm="WhetIQ Private"'
     }
   });
 }
@@ -35,8 +35,8 @@ function applyNoIndex(response: NextResponse): NextResponse {
 }
 
 function isAuthorized(request: NextRequest): boolean {
-  const username = process.env.PREVIEW_AUTH_USERNAME;
-  const password = process.env.PREVIEW_AUTH_PASSWORD;
+  const username = process.env.PRIVATE_AUTH_USERNAME;
+  const password = process.env.PRIVATE_AUTH_PASSWORD;
 
   if (!username || !password) {
     return false;
@@ -71,11 +71,14 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return applyNoIndex(NextResponse.next());
   }
 
-  if (mode === "basic") {
+  if (mode === "basic" || mode === "hybrid") {
     if (isAuthorized(request)) {
-      return applyNoIndex(NextResponse.next());
+      if (mode === "basic") {
+        return applyNoIndex(NextResponse.next());
+      }
+    } else {
+      return applyNoIndex(unauthorizedResponse());
     }
-    return applyNoIndex(unauthorizedResponse());
   }
 
   const path = request.nextUrl.pathname;

@@ -1,7 +1,7 @@
 # Vercel Deployment Guide
 
 This guide deploys `apps/web` securely with support for:
-- private preview access (OAuth)
+- private access (OAuth)
 - private production access (OAuth)
 - public demo mode (no provider keys, no AI calls)
 
@@ -17,17 +17,17 @@ Configure one or both:
 ### GitHub OAuth App
 1. GitHub -> Settings -> Developer settings -> OAuth Apps -> New OAuth App.
 2. Add callback URL:
-   - Preview: `https://<your-preview-domain>/api/auth/callback/github`
+   - Private: `https://<your-private-domain>/api/auth/callback/github`
    - Production: `https://<your-prod-domain>/api/auth/callback/github`
 
 ### Google OAuth Client
 1. Google Cloud Console -> APIs & Services -> Credentials -> Create OAuth Client ID.
 2. Authorized redirect URIs:
-   - Preview: `https://<your-preview-domain>/api/auth/callback/google`
+   - Private: `https://<your-private-domain>/api/auth/callback/google`
    - Production: `https://<your-prod-domain>/api/auth/callback/google`
 
 Add these Vercel env vars (Preview and/or Production):
-- `PREVIEW_AUTH_MODE=oauth`
+- `PRIVATE_AUTH_MODE=oauth` (or `hybrid` for Basic + OAuth)
 - `AUTH_SECRET=<long random secret>`
 - `NEXTAUTH_URL=https://<environment-domain>`
 - `AUTH_GITHUB_ID=<github oauth client id>`
@@ -46,15 +46,15 @@ Notes:
 
 ## 3) Choose Deployment Mode
 
-### A) Private Preview (recommended)
+### A) Private Access (recommended)
 Use in Vercel **Preview**:
-- `PREVIEW_AUTH_MODE=oauth`
+- `PRIVATE_AUTH_MODE=oauth` (or `hybrid`)
 - OAuth vars from section 2
 - Optional provider keys
 
 ### B) Private Production
 Use in Vercel **Production**:
-- `PREVIEW_AUTH_MODE=oauth`
+- `PRIVATE_AUTH_MODE=oauth` (or `hybrid`)
 - OAuth vars from section 2
 - Provider keys:
   - `OPENAI_API_KEY`
@@ -66,7 +66,7 @@ Use in Vercel **Production**:
 - `DEMO_MODE=true`
 - `PUBLIC_DEMO=true`
 - Do not set provider API keys
-- Optional: leave `PREVIEW_AUTH_MODE` unset so middleware resolves to public demo mode
+- Optional: leave `PRIVATE_AUTH_MODE` unset so middleware resolves to public demo mode
 
 In this mode, `/api/chat` returns mock/demo output and never calls external providers.
 
@@ -90,3 +90,4 @@ npm run doctor
 npm run -w @mvp/web build
 npm run -w @mvp/web dev
 ```
+

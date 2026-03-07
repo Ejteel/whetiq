@@ -12,8 +12,65 @@ export interface SendOutput {
   transformedPrompt: string;
 }
 
-function isDemoModeEnabled(): boolean {
-  return process.env.DEMO_MODE === "true";
+type RuntimeMode = "demo" | "private_live";
+
+const MODE_CACHE_MS = 15000;
+let cachedMode: RuntimeMode | null = null;
+let cachedAt = 0;
+
+function parseRuntimeMode(value: string | undefined): RuntimeMode | null {
+  if (value === "demo" || value === "private_live") {
+    return value;
+  }
+  return null;
+}
+
+async function resolveRuntimeMode(): Promise<RuntimeMode> {
+  if (process.env.DEMO_MODE === "true") {
+    return "demo";
+  }
+
+  const explicit = parseRuntimeMode(process.env.APP_RUNTIME_MODE);
+  if (explicit) {
+    return explicit;
+  }
+
+  const now = Date.now();
+  if (cachedMode && now - cachedAt < MODE_CACHE_MS) {
+    return cachedMode;
+  }
+
+  const settingsUrl = process.env.CONTROL_PLANE_SETTINGS_URL;
+  const appId = process.env.CONTROL_PLANE_APP_ID;
+  const serviceToken = process.env.CONTROL_PLANE_SERVICE_TOKEN;
+
+  if (!settingsUrl || !appId || !serviceToken) {
+    return "private_live";
+  }
+
+  try {
+    const response = await fetch(`${settingsUrl}?appId=${encodeURIComponent(appId)}`, {
+      headers: {
+        Authorization: `Bearer ${serviceToken}`
+      },
+      cache: "no-store"
+    });
+    if (!response.ok) {
+      return "private_live";
+    }
+
+    const payload = (await response.json()) as { mode?: string };
+    const remote = parseRuntimeMode(payload.mode);
+    if (remote) {
+      cachedMode = remote;
+      cachedAt = now;
+      return remote;
+    }
+  } catch {
+    return "private_live";
+  }
+
+  return "private_live";
 }
 
 function buildTransformedPrompt(input: SendInput): string {
@@ -145,8 +202,9 @@ function buildDemoResponse(input: SendInput, transformedPrompt: string): SendOut
 
 export async function sendProviderMessage(input: SendInput): Promise<SendOutput> {
   const transformedPrompt = buildTransformedPrompt(input);
+  const mode = await resolveRuntimeMode();
 
-  if (isDemoModeEnabled()) {
+  if (mode === "demo") {
     return buildDemoResponse(input, transformedPrompt);
   }
 

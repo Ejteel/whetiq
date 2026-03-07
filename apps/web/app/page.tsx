@@ -2,8 +2,8 @@ import Link from "next/link";
 
 export default function LandingPage() {
   const isDemo = process.env.DEMO_MODE === "true";
-  const authMode = process.env.PREVIEW_AUTH_MODE ?? "none";
-  const isOAuth = authMode === "oauth";
+  const authMode = process.env.PRIVATE_AUTH_MODE ?? "none";
+  const isOAuth = authMode === "oauth" || authMode === "hybrid";
   const privateHref = isOAuth ? "/login?callbackUrl=%2Fworkspace" : "/workspace";
 
   return (
