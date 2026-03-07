@@ -6,7 +6,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const identity = await requireAdminIdentity("viewer");
     const appId = request.nextUrl.searchParams.get("appId") ?? "aggregator-web";
-    return NextResponse.json({ appId, mode: getRuntimeMode(appId), role: identity.role });
+    return NextResponse.json({ appId, mode: await getRuntimeMode(appId), role: identity.role });
   } catch (error) {
     const status = error instanceof Error && error.message === "FORBIDDEN" ? 403 : 401;
     return NextResponse.json({ error: "Unauthorized" }, { status });
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const appId = body.appId?.trim() || "aggregator-web";
-    setRuntimeMode(appId, body.mode, identity.email);
+    await setRuntimeMode(appId, body.mode, identity.email);
 
     return NextResponse.json({ ok: true, appId, mode: body.mode });
   } catch (error) {

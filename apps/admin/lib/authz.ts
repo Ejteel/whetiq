@@ -14,7 +14,7 @@ export async function requireAdminIdentity(minRole: AdminRole = "viewer"): Promi
     throw new Error("UNAUTHORIZED");
   }
 
-  const role = getRoleByEmail(email);
+  const role = await getRoleByEmail(email);
   if (!role) {
     throw new Error("FORBIDDEN");
   }

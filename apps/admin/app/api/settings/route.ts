@@ -11,5 +11,5 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const appId = request.nextUrl.searchParams.get("appId") ?? "aggregator-web";
-  return NextResponse.json({ appId, mode: getRuntimeMode(appId) });
+  return NextResponse.json({ appId, mode: await getRuntimeMode(appId) });
 }

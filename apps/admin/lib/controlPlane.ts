@@ -1,44 +1,14 @@
-import Database from "better-sqlite3";
-import path from "node:path";
 import fs from "node:fs";
+import path from "node:path";
+import { eq } from "drizzle-orm";
+import { getDb, getPgPool } from "./db/client";
+import { adminUsers, auditLogs, runtimeSettings, schemaMigrations } from "./db/schema";
 
 export type AdminRole = "viewer" | "operator" | "super_admin";
 export type RuntimeMode = "demo" | "private_live";
 
-const DATA_DIR = path.join(process.cwd(), ".data");
-const DB_PATH = path.join(DATA_DIR, "control-plane.db");
-
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-const db = new Database(DB_PATH);
-
-db.exec(`
-CREATE TABLE IF NOT EXISTS admin_users (
-  email TEXT PRIMARY KEY,
-  role TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  created_by TEXT
-);
-
-CREATE TABLE IF NOT EXISTS runtime_settings (
-  app_id TEXT PRIMARY KEY,
-  mode TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  updated_by TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  actor_email TEXT NOT NULL,
-  action TEXT NOT NULL,
-  target TEXT NOT NULL,
-  metadata TEXT,
-  created_at TEXT NOT NULL
-);
-`);
+let initialized = false;
+let initPromise: Promise<void> | null = null;
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -54,70 +24,199 @@ function parseCsv(input?: string): string[] {
     .filter(Boolean);
 }
 
-export function bootstrapSuperAdmins(): void {
-  const superAdmins = parseCsv(process.env.ADMIN_SUPER_ADMIN_EMAILS);
-  const stamp = nowIso();
-  const upsert = db.prepare(`
-    INSERT INTO admin_users (email, role, created_at, updated_at, created_by)
-    VALUES (@email, 'super_admin', @stamp, @stamp, 'bootstrap')
-    ON CONFLICT(email) DO UPDATE SET role='super_admin', updated_at=@stamp
+async function runPendingMigrations(): Promise<void> {
+  const db = getDb();
+  const pool = getPgPool();
+  const migrationsDir = path.join(process.cwd(), "migrations");
+  const files = fs
+    .readdirSync(migrationsDir)
+    .filter((name) => name.endsWith(".sql"))
+    .sort((a, b) => a.localeCompare(b));
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      name TEXT PRIMARY KEY,
+      applied_at TIMESTAMPTZ NOT NULL
+    )
   `);
 
-  for (const email of superAdmins) {
-    upsert.run({ email, stamp });
+  await pool.query("SELECT pg_advisory_lock($1)", [982451653]);
+  try {
+    for (const name of files) {
+      const existing = await db
+        .select({ name: schemaMigrations.name })
+        .from(schemaMigrations)
+        .where(eq(schemaMigrations.name, name))
+        .limit(1);
+      if (existing.length > 0) {
+        continue;
+      }
+
+      const sql = fs.readFileSync(path.join(migrationsDir, name), "utf8");
+      await pool.query("BEGIN");
+      try {
+        await pool.query(sql);
+        await pool.query("INSERT INTO schema_migrations (name, applied_at) VALUES ($1, NOW())", [name]);
+        await pool.query("COMMIT");
+      } catch (error) {
+        await pool.query("ROLLBACK");
+        throw error;
+      }
+    }
+  } finally {
+    await pool.query("SELECT pg_advisory_unlock($1)", [982451653]);
   }
 }
 
-export function getRoleByEmail(email: string): AdminRole | null {
+export async function bootstrapSuperAdmins(): Promise<void> {
+  const db = getDb();
+  const superAdmins = parseCsv(process.env.ADMIN_SUPER_ADMIN_EMAILS);
+  const now = new Date();
+
+  for (const email of superAdmins) {
+    await db
+      .insert(adminUsers)
+      .values({
+        email,
+        role: "super_admin",
+        createdAt: now,
+        updatedAt: now,
+        createdBy: "bootstrap"
+      })
+      .onConflictDoUpdate({
+        target: adminUsers.email,
+        set: {
+          role: "super_admin",
+          updatedAt: now
+        }
+      });
+  }
+}
+
+export async function initControlPlane(): Promise<void> {
+  if (initialized) {
+    return;
+  }
+
+  if (!initPromise) {
+    initPromise = (async () => {
+      await runPendingMigrations();
+      await bootstrapSuperAdmins();
+      initialized = true;
+    })();
+  }
+
+  await initPromise;
+}
+
+export async function getRoleByEmail(email: string): Promise<AdminRole | null> {
+  await initControlPlane();
+  const db = getDb();
   const normalized = email.trim().toLowerCase();
-  const row = db.prepare("SELECT role FROM admin_users WHERE email = ?").get(normalized) as { role?: string } | undefined;
-  if (row?.role === "viewer" || row?.role === "operator" || row?.role === "super_admin") {
-    return row.role;
+
+  const row = await db.select({ role: adminUsers.role }).from(adminUsers).where(eq(adminUsers.email, normalized)).limit(1);
+  const role = row[0]?.role;
+  if (role === "viewer" || role === "operator" || role === "super_admin") {
+    return role;
   }
   return null;
 }
 
-export function upsertAdminUser(email: string, role: AdminRole, actorEmail: string): void {
+export async function upsertAdminUser(email: string, role: AdminRole, actorEmail: string): Promise<void> {
+  await initControlPlane();
+  const db = getDb();
   const normalized = email.trim().toLowerCase();
-  const stamp = nowIso();
-  db.prepare(`
-    INSERT INTO admin_users (email, role, created_at, updated_at, created_by)
-    VALUES (@email, @role, @stamp, @stamp, @actorEmail)
-    ON CONFLICT(email) DO UPDATE SET role=@role, updated_at=@stamp
-  `).run({ email: normalized, role, stamp, actorEmail: actorEmail.toLowerCase() });
+  const actor = actorEmail.trim().toLowerCase();
+  const now = new Date();
 
-  appendAudit(actorEmail, "admin.user.upsert", normalized, JSON.stringify({ role }));
+  await db
+    .insert(adminUsers)
+    .values({
+      email: normalized,
+      role,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: actor
+    })
+    .onConflictDoUpdate({
+      target: adminUsers.email,
+      set: {
+        role,
+        updatedAt: now
+      }
+    });
+
+  await appendAudit(actor, "admin.user.upsert", normalized, JSON.stringify({ role }));
 }
 
-export function listAdminUsers(): Array<{ email: string; role: AdminRole; updatedAt: string }> {
-  const rows = db
-    .prepare("SELECT email, role, updated_at FROM admin_users ORDER BY role DESC, email ASC")
-    .all() as Array<{ email: string; role: AdminRole; updated_at: string }>;
-  return rows.map((row) => ({ email: row.email, role: row.role, updatedAt: row.updated_at }));
+export async function listAdminUsers(): Promise<Array<{ email: string; role: AdminRole; updatedAt: string }>> {
+  await initControlPlane();
+  const db = getDb();
+  const rows = await db.select().from(adminUsers);
+
+  const rank: Record<AdminRole, number> = {
+    super_admin: 3,
+    operator: 2,
+    viewer: 1
+  };
+
+  return rows
+    .map((row) => ({
+      email: row.email,
+      role: row.role as AdminRole,
+      updatedAt: row.updatedAt.toISOString()
+    }))
+    .sort((a, b) => {
+      const roleCmp = rank[b.role] - rank[a.role];
+      if (roleCmp !== 0) {
+        return roleCmp;
+      }
+      return a.email.localeCompare(b.email);
+    });
 }
 
-export function getRuntimeMode(appId: string): RuntimeMode {
-  const row = db
-    .prepare("SELECT mode FROM runtime_settings WHERE app_id = ?")
-    .get(appId) as { mode?: string } | undefined;
-  return row?.mode === "demo" ? "demo" : "private_live";
+export async function getRuntimeMode(appId: string): Promise<RuntimeMode> {
+  await initControlPlane();
+  const db = getDb();
+  const rows = await db.select({ mode: runtimeSettings.mode }).from(runtimeSettings).where(eq(runtimeSettings.appId, appId)).limit(1);
+  return rows[0]?.mode === "demo" ? "demo" : "private_live";
 }
 
-export function setRuntimeMode(appId: string, mode: RuntimeMode, actorEmail: string): void {
-  const stamp = nowIso();
-  db.prepare(`
-    INSERT INTO runtime_settings (app_id, mode, updated_at, updated_by)
-    VALUES (@appId, @mode, @stamp, @actorEmail)
-    ON CONFLICT(app_id) DO UPDATE SET mode=@mode, updated_at=@stamp, updated_by=@actorEmail
-  `).run({ appId, mode, stamp, actorEmail: actorEmail.toLowerCase() });
+export async function setRuntimeMode(appId: string, mode: RuntimeMode, actorEmail: string): Promise<void> {
+  await initControlPlane();
+  const db = getDb();
+  const actor = actorEmail.trim().toLowerCase();
+  const now = new Date();
 
-  appendAudit(actorEmail, "runtime.mode.set", appId, JSON.stringify({ mode }));
+  await db
+    .insert(runtimeSettings)
+    .values({
+      appId,
+      mode,
+      updatedAt: now,
+      updatedBy: actor
+    })
+    .onConflictDoUpdate({
+      target: runtimeSettings.appId,
+      set: {
+        mode,
+        updatedAt: now,
+        updatedBy: actor
+      }
+    });
+
+  await appendAudit(actor, "runtime.mode.set", appId, JSON.stringify({ mode }));
 }
 
-export function appendAudit(actorEmail: string, action: string, target: string, metadata: string): void {
-  db.prepare(
-    "INSERT INTO audit_logs (actor_email, action, target, metadata, created_at) VALUES (?, ?, ?, ?, ?)"
-  ).run(actorEmail.toLowerCase(), action, target, metadata, nowIso());
-}
+export async function appendAudit(actorEmail: string, action: string, target: string, metadata: string): Promise<void> {
+  await initControlPlane();
+  const db = getDb();
 
-bootstrapSuperAdmins();
+  await db.insert(auditLogs).values({
+    actorEmail: actorEmail.toLowerCase(),
+    action,
+    target,
+    metadata,
+    createdAt: new Date(nowIso())
+  });
+}

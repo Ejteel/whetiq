@@ -5,14 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -p 3010",
+    "migrate": "node ./scripts/migrate.mjs",
     "build": "next build",
     "start": "next start -p 3010"
   },
   "dependencies": {
-    "better-sqlite3": "^11.7.2",
+    "drizzle-orm": "^0.44.5",
     "next": "^15.0.0",
     "next-auth": "^4.24.13",
+    "pg": "^8.16.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.6",
+    "drizzle-kit": "^0.31.4"
   }
 }

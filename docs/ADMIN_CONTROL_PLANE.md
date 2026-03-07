@@ -9,6 +9,7 @@ The admin control plane is a separate app at `apps/admin` intended for `admin.wh
 
 ## Required Environment Variables
 ```bash
+DATABASE_URL=
 AUTH0_CLIENT_ID=
 AUTH0_CLIENT_SECRET=
 AUTH0_ISSUER=
@@ -16,6 +17,12 @@ ADMIN_AUTH_SECRET=
 NEXTAUTH_URL=https://admin.whetiq.com
 ADMIN_SUPER_ADMIN_EMAILS=you@company.com
 CONTROL_PLANE_SERVICE_TOKEN=long_random_shared_token
+```
+
+## Migrations
+Run once for each environment before serving traffic:
+```bash
+npm run -w @mvp/admin migrate
 ```
 
 ## APIs
@@ -34,6 +41,6 @@ CONTROL_PLANE_SERVICE_TOKEN=long_random_shared_token
   - Body: `{ "email": "user@company.com", "role": "viewer|operator|super_admin" }`
 
 ## Notes
-- Data is currently persisted in SQLite at `apps/admin/.data/control-plane.db`.
+- Data is persisted in Postgres (`DATABASE_URL`) using Drizzle.
 - The initial super-admin set is seeded from `ADMIN_SUPER_ADMIN_EMAILS`.
 - Managed apps should call `GET /api/settings` and cache mode briefly.

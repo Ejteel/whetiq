@@ -25,13 +25,13 @@ export const authOptions: NextAuthOptions = {
       if (!email) {
         return false;
       }
-      const role = getRoleByEmail(email);
+      const role = await getRoleByEmail(email);
       return Boolean(role) || "/access-denied";
     },
     async jwt({ token, user }) {
       const email = normalizeEmail(user?.email ?? token.email);
       token.email = email;
-      token.role = email ? getRoleByEmail(email) : null;
+      token.role = email ? await getRoleByEmail(email) : null;
       return token;
     },
     async session({ session, token }) {

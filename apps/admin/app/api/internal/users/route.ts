@@ -12,7 +12,7 @@ function parseRole(value: string | undefined): AdminRole | null {
 export async function GET(): Promise<NextResponse> {
   try {
     await requireAdminIdentity("viewer");
-    return NextResponse.json({ users: listAdminUsers() });
+    return NextResponse.json({ users: await listAdminUsers() });
   } catch (error) {
     const status = error instanceof Error && error.message === "FORBIDDEN" ? 403 : 401;
     return NextResponse.json({ error: "Unauthorized" }, { status });
@@ -31,8 +31,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "email and role are required" }, { status: 400 });
     }
 
-    upsertAdminUser(email, role, identity.email);
-    return NextResponse.json({ ok: true, users: listAdminUsers() });
+    await upsertAdminUser(email, role, identity.email);
+    return NextResponse.json({ ok: true, users: await listAdminUsers() });
   } catch (error) {
     const status = error instanceof Error && error.message === "FORBIDDEN" ? 403 : 401;
     return NextResponse.json({ error: "Unauthorized" }, { status });
