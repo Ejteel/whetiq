@@ -1,16 +1,40 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { getProviders, signIn } from "next-auth/react";
 
-type LoginButtonsProps = {
-  hasGitHub: boolean;
-  hasGoogle: boolean;
+type ProviderId = "github" | "google";
+
+type ProviderState = {
+  github: boolean;
+  google: boolean;
 };
 
-export function LoginButtons({ hasGitHub, hasGoogle }: LoginButtonsProps) {
+export function LoginButtons() {
+  const [providers, setProviders] = useState<ProviderState>({ github: false, google: false });
+
+  useEffect(() => {
+    let active = true;
+    void getProviders().then((data) => {
+      if (!active || !data) {
+        return;
+      }
+      setProviders({
+        github: Boolean(data.github),
+        google: Boolean(data.google)
+      });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const visible = (id: ProviderId) => providers[id];
+
   return (
     <div style={{ display: "grid", gap: 10 }}>
-      {hasGitHub ? (
+      {visible("github") ? (
         <button
           type="button"
           onClick={() => void signIn("github", { callbackUrl: "/internal" })}
@@ -29,7 +53,7 @@ export function LoginButtons({ hasGitHub, hasGoogle }: LoginButtonsProps) {
           Continue with GitHub
         </button>
       ) : null}
-      {hasGoogle ? (
+      {visible("google") ? (
         <button
           type="button"
           onClick={() => void signIn("google", { callbackUrl: "/internal" })}
@@ -48,7 +72,7 @@ export function LoginButtons({ hasGitHub, hasGoogle }: LoginButtonsProps) {
           Continue with Google
         </button>
       ) : null}
-      {!hasGitHub && !hasGoogle ? (
+      {!visible("github") && !visible("google") ? (
         <p style={{ color: "#7d7565", margin: 0 }}>
           No OAuth providers configured. Set `AUTH_GITHUB_*` and/or `AUTH_GOOGLE_*` environment variables.
         </p>
