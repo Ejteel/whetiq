@@ -73,9 +73,10 @@ In this mode, `/api/chat` returns mock/demo output and never calls external prov
 ## 4) Verify
 After deploy:
 1. Open site home page.
-2. If OAuth mode enabled, verify redirect to `/login`.
-3. Sign in with GitHub or Google.
-4. Send chat input and confirm:
+2. Click **Open Demo Workspace** and verify `/workspace` loads without OAuth.
+3. Click **Sign In for Private Workspace** and verify redirect to `/login`.
+4. Sign in with GitHub or Google and confirm redirect to `/private-workspace`.
+5. Send chat input and confirm:
    - Demo mode: receives "Demo Mode Response"
    - Real mode: receives provider response
 

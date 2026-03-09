@@ -5,6 +5,7 @@ export interface SendInput {
   model: string;
   text: string;
   enhance?: boolean;
+  runtimeModeOverride?: RuntimeMode;
 }
 
 export interface SendOutput {
@@ -202,7 +203,7 @@ function buildDemoResponse(input: SendInput, transformedPrompt: string): SendOut
 
 export async function sendProviderMessage(input: SendInput): Promise<SendOutput> {
   const transformedPrompt = buildTransformedPrompt(input);
-  const mode = await resolveRuntimeMode();
+  const mode = input.runtimeModeOverride ?? (await resolveRuntimeMode());
 
   if (mode === "demo") {
     return buildDemoResponse(input, transformedPrompt);

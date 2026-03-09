@@ -84,8 +84,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const path = request.nextUrl.pathname;
   const isPublic =
     path === "/" ||
+    path === "/workspace" ||
     path === "/login" ||
     path.startsWith("/api/auth/") ||
+    path === "/api/chat/demo" ||
     path.startsWith("/_next/") ||
     path === "/favicon.ico";
 

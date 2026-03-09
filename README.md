@@ -106,7 +106,7 @@ AUTH_GITHUB_SECRET=github_oauth_app_client_secret
 AUTH_GOOGLE_ID=google_oauth_client_id
 AUTH_GOOGLE_SECRET=google_oauth_client_secret
 ```
-Then users authenticate at `/login` using any configured OAuth provider. If users have 2FA enabled in GitHub/Google accounts, that 2FA is enforced by the identity provider during sign-in.
+Users can open the public demo at `/workspace` without login, while private access goes through `/login` and redirects to `/private-workspace`. If users have 2FA enabled in GitHub/Google accounts, that 2FA is enforced by the identity provider during sign-in.
 
 Optional allowlist for private pilot access:
 ```bash

@@ -4,7 +4,7 @@ export default function LandingPage() {
   const isDemo = process.env.DEMO_MODE === "true";
   const authMode = process.env.PRIVATE_AUTH_MODE ?? "none";
   const isOAuth = authMode === "oauth" || authMode === "hybrid";
-  const privateHref = isOAuth ? "/login?callbackUrl=%2Fworkspace" : "/workspace";
+  const privateHref = isOAuth ? "/login?callbackUrl=%2Fprivate-workspace" : "/private-workspace";
 
   return (
     <main className="landing">

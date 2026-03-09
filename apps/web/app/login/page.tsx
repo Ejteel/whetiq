@@ -6,7 +6,7 @@ export default async function LoginPage({
   searchParams?: Promise<{ callbackUrl?: string }>;
 }) {
   const params = (await searchParams) ?? {};
-  const callbackUrl = params.callbackUrl ?? "/workspace";
+  const callbackUrl = params.callbackUrl ?? "/private-workspace";
 
   return (
     <main
@@ -35,7 +35,7 @@ export default async function LoginPage({
         <LoginButtons callbackUrl={callbackUrl} />
 
         <p style={{ marginTop: 12, color: "#7a7467", fontSize: 12 }}>
-          Buttons only work for providers configured in environment variables.
+          Private workspace access requires configured OAuth provider credentials.
         </p>
       </section>
     </main>
