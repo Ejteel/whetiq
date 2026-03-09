@@ -174,6 +174,17 @@ npm run build
 npm run typecheck
 npm test
 ```
+Browser smoke tests (Playwright):
+```bash
+npm run test:e2e
+```
+Local smoke run (requires local web/admin servers):
+```bash
+npm run test:e2e:local
+```
+
+Pilot UX/QA protocol:
+- [docs/PILOT_UX_QA_PROTOCOL.md](docs/PILOT_UX_QA_PROTOCOL.md)
 
 ## Troubleshooting
 - `Safari can’t connect to localhost:3001`

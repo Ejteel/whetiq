@@ -1,10 +1,12 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 type Provider = "openai" | "anthropic" | "gemini";
+type RuntimeMode = "demo" | "private_live";
+type RuntimeSource = "forced_demo_endpoint" | "demo_env" | "app_runtime_mode" | "control_plane" | "fallback_default";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -17,6 +19,10 @@ type SendResponse = {
   text?: string;
   final?: {
     transformedPrompt?: string;
+  };
+  runtime?: {
+    mode: RuntimeMode;
+    source: RuntimeSource;
   };
   error?: string;
 };
@@ -40,16 +46,27 @@ const MODELS: Record<Provider, string[]> = {
   gemini: ["gemini-2.0-flash"]
 };
 
-const NAV_ITEMS = ["Search", "Customize", "Chats", "Projects", "Artifacts"] as const;
-type NavItem = (typeof NAV_ITEMS)[number];
+const BOTTOM_THRESHOLD_PX = 56;
 
-const RECENTS = [
-  "Federal news sourcing",
-  "Provider adapter refinements",
-  "Enhancer template design",
-  "Cost dashboard notes"
-];
-const PROJECTS = ["POC Development", "Growth Experiments", "Prompt Library"];
+function isNearBottom(container: HTMLElement): boolean {
+  return container.scrollHeight - (container.scrollTop + container.clientHeight) <= BOTTOM_THRESHOLD_PX;
+}
+
+function formatRuntimeSource(source: RuntimeSource): string {
+  if (source === "control_plane") {
+    return "Control Plane";
+  }
+  if (source === "app_runtime_mode") {
+    return "APP_RUNTIME_MODE";
+  }
+  if (source === "demo_env") {
+    return "DEMO_MODE";
+  }
+  if (source === "forced_demo_endpoint") {
+    return "Demo endpoint";
+  }
+  return "Fallback default";
+}
 
 export function WorkspaceClient({ chatEndpoint, mode }: WorkspaceClientProps) {
   const [provider, setProvider] = useState<Provider>("openai");
@@ -60,10 +77,12 @@ export function WorkspaceClient({ chatEndpoint, mode }: WorkspaceClientProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [transformedPrompt, setTransformedPrompt] = useState("");
   const [busy, setBusy] = useState(false);
-  const [activeNav, setActiveNav] = useState<NavItem>("Chats");
-  const [activeRecent, setActiveRecent] = useState(RECENTS[0]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [projectName, setProjectName] = useState(PROJECTS[0]);
+  const [stickToBottom, setStickToBottom] = useState(true);
+  const [showJumpToLatest, setShowJumpToLatest] = useState(false);
+  const [runtimeInfo, setRuntimeInfo] = useState<{ mode: RuntimeMode; source: RuntimeSource } | null>(null);
+
+  const threadBodyRef = useRef<HTMLElement | null>(null);
+  const userInteractedRef = useRef(false);
 
   const recommendation = useMemo(() => {
     if (text.length > 2500) {
@@ -75,28 +94,50 @@ export function WorkspaceClient({ chatEndpoint, mode }: WorkspaceClientProps) {
     return "Recommended: ChatGPT (general tasks)";
   }, [text]);
 
-  const filteredRecents = useMemo(
-    () => RECENTS.filter((item) => item.toLowerCase().includes(searchQuery.toLowerCase())),
-    [searchQuery]
-  );
+  const modeLabel = mode === "demo" ? "Demo Workspace (public)" : "Private Workspace";
 
-  const latestAssistantMessage = useMemo(
-    () => [...messages].reverse().find((message) => message.role === "assistant")?.text ?? "",
-    [messages]
-  );
+  function scrollToLatest(behavior: ScrollBehavior = "smooth") {
+    const node = threadBodyRef.current;
+    if (!node) {
+      return;
+    }
+    node.scrollTo({ top: node.scrollHeight, behavior });
+  }
 
-  const headerContext =
-    activeNav === "Chats"
-      ? "Canonical conversation with provider switching"
-      : activeNav === "Search"
-        ? "Find and jump into recent working threads"
-        : activeNav === "Customize"
-          ? "Tune defaults for this workspace"
-          : activeNav === "Projects"
-            ? "Switch active project context"
-            : "Review transformed prompt artifacts";
+  function onThreadScroll() {
+    const node = threadBodyRef.current;
+    if (!node) {
+      return;
+    }
+    const nearBottom = isNearBottom(node);
+    setStickToBottom(nearBottom);
+    if (nearBottom) {
+      setShowJumpToLatest(false);
+    }
+    userInteractedRef.current = true;
+  }
 
-  const modeLabel = mode === "demo" ? "Demo Workspace (public)" : "Private Workspace (OAuth)";
+  useEffect(() => {
+    const node = threadBodyRef.current;
+    if (!node) {
+      return;
+    }
+
+    if (stickToBottom) {
+      scrollToLatest(messages.length > 2 ? "smooth" : "auto");
+      return;
+    }
+
+    if (userInteractedRef.current && messages.length > 0) {
+      setShowJumpToLatest(true);
+    }
+  }, [messages, stickToBottom]);
+
+  useEffect(() => {
+    if (!showPrompt && stickToBottom) {
+      scrollToLatest("auto");
+    }
+  }, [showPrompt, stickToBottom]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -145,6 +186,10 @@ export function WorkspaceClient({ chatEndpoint, mode }: WorkspaceClientProps) {
       if (typeof response.final?.transformedPrompt === "string") {
         setTransformedPrompt(response.final.transformedPrompt);
       }
+
+      if (response.runtime) {
+        setRuntimeInfo(response.runtime);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       setMessages((prev) => [...prev, { role: "assistant", text: `Error: ${message}` }]);
@@ -153,126 +198,14 @@ export function WorkspaceClient({ chatEndpoint, mode }: WorkspaceClientProps) {
     }
   }
 
-  function handleSelectRecent(item: string) {
-    setActiveRecent(item);
-    setActiveNav("Chats");
-    setProjectName("POC Development");
-    if (!messages.length) {
-      setText(`Continue work on: ${item}`);
-    }
-  }
-
   function renderThreadBody() {
-    if (activeNav === "Search") {
-      return (
-        <section className="sectionPanel">
-          <h3>Search Chats</h3>
-          <p>Type to filter recents. Click a result to open it in Chats.</p>
-          <input
-            className="sectionInput"
-            type="search"
-            placeholder="Search recent threads..."
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
-          <div className="sectionList">
-            {filteredRecents.length ? (
-              filteredRecents.map((item) => (
-                <button key={item} type="button" className="sectionCard" onClick={() => handleSelectRecent(item)}>
-                  {item}
-                </button>
-              ))
-            ) : (
-              <div className="sectionEmpty">No matching recents.</div>
-            )}
-          </div>
-        </section>
-      );
-    }
-
-    if (activeNav === "Customize") {
-      return (
-        <section className="sectionPanel">
-          <h3>Workspace Defaults</h3>
-          <p>These controls affect how new sends are configured.</p>
-          <div className="sectionGrid">
-            <label>
-              Provider
-              <select
-                value={provider}
-                onChange={(event) => {
-                  const next = event.target.value as Provider;
-                  setProvider(next);
-                  setModel(MODELS[next][0]);
-                }}
-              >
-                <option value="openai">ChatGPT</option>
-                <option value="anthropic">Claude</option>
-                <option value="gemini">Gemini</option>
-              </select>
-            </label>
-            <label>
-              Model
-              <select value={model} onChange={(event) => setModel(event.target.value)}>
-                {MODELS[provider].map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="sectionToggle">
-              <input type="checkbox" checked={enhance} onChange={(event) => setEnhance(event.target.checked)} />
-              Enable prompt enhancement by default
-            </label>
-          </div>
-        </section>
-      );
-    }
-
-    if (activeNav === "Projects") {
-      return (
-        <section className="sectionPanel">
-          <h3>Projects</h3>
-          <p>Select an active project context for this thread.</p>
-          <div className="sectionList">
-            {PROJECTS.map((project) => (
-              <button
-                key={project}
-                type="button"
-                className={`sectionCard ${project === projectName ? "selected" : ""}`}
-                onClick={() => {
-                  setProjectName(project);
-                  setActiveNav("Chats");
-                }}
-              >
-                {project}
-              </button>
-            ))}
-          </div>
-        </section>
-      );
-    }
-
-    if (activeNav === "Artifacts") {
-      return (
-        <section className="sectionPanel">
-          <h3>Artifacts</h3>
-          <p>Latest transformed prompt and assistant output snapshot.</p>
-          <div className="artifactBox">
-            <h4>Transformed Prompt</h4>
-            <pre>{transformedPrompt || "No transformed prompt snapshot yet."}</pre>
-          </div>
-          <div className="artifactBox">
-            <h4>Latest Assistant Response</h4>
-            <pre>{latestAssistantMessage || "No assistant response yet."}</pre>
-          </div>
-        </section>
-      );
-    }
-
     if (messages.length === 0) {
-      return <div className="emptyState">Start a new message to test routing, enhancer transforms, and unified thread output.</div>;
+      return (
+        <div className="emptyState">
+          Start with a real task and send your first prompt. This workspace only shows live conversation state and
+          response output.
+        </div>
+      );
     }
 
     return messages.map((message, index) => (
@@ -293,69 +226,39 @@ export function WorkspaceClient({ chatEndpoint, mode }: WorkspaceClientProps) {
   }
 
   return (
-    <div className="workspace">
-      <aside className="leftRail">
-        <button
-          className="newChatButton"
-          type="button"
-          onClick={() => {
-            setMessages([]);
-            setTransformedPrompt("");
-            setText("");
-            setActiveNav("Chats");
-          }}
-        >
-          + New chat
-        </button>
-        <nav className="mainNav">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item}
-              className={`navItem ${activeNav === item ? "active" : ""}`}
-              type="button"
-              onClick={() => setActiveNav(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </nav>
-
-        <div className="recentBlock">
-          <h4>Recents</h4>
-          <ul>
-            {RECENTS.map((item, index) => (
-              <li key={item}>
-                <button
-                  type="button"
-                  className={`recentItem ${activeRecent === item || (index === 0 && activeRecent === RECENTS[0]) ? "activeRecent" : ""}`}
-                  onClick={() => handleSelectRecent(item)}
-                >
-                  {item}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="profileCard">
-          <div className="avatar">E</div>
-          <div>
-            <div className="profileName">Ethan</div>
-            <div className="profilePlan">Pro plan</div>
-          </div>
-        </div>
-      </aside>
-
+    <div className="workspace workspaceSingle">
       <section className="chatColumn">
         <header className="threadHeader">
-          <div className="crumb">{projectName}</div>
-          <div className="crumbDivider">/</div>
-          <div className="crumb muted">{headerContext}</div>
-          <div className="crumbDivider">/</div>
-          <div className="crumb muted">{modeLabel}</div>
+          <div className="crumb">{modeLabel}</div>
+          {mode === "private" && runtimeInfo ? (
+            <>
+              <div className="crumbDivider">/</div>
+              <div className="crumb muted">{runtimeInfo.mode === "demo" ? "Demo runtime" : "Private live runtime"}</div>
+              <div className="crumbDivider">/</div>
+              <div className="crumb muted">{formatRuntimeSource(runtimeInfo.source)}</div>
+            </>
+          ) : null}
         </header>
 
-        <main className="threadBody">{renderThreadBody()}</main>
+        <main ref={threadBodyRef} data-testid="thread-body" className="threadBody" onScroll={onThreadScroll}>
+          {renderThreadBody()}
+        </main>
+
+        {showJumpToLatest ? (
+          <div className="jumpWrap">
+            <button
+              type="button"
+              className="jumpButton"
+              onClick={() => {
+                setStickToBottom(true);
+                setShowJumpToLatest(false);
+                scrollToLatest("smooth");
+              }}
+            >
+              Jump to latest
+            </button>
+          </div>
+        ) : null}
 
         <form className="composer" onSubmit={onSubmit}>
           <div className="composerTopRow">
@@ -398,7 +301,7 @@ export function WorkspaceClient({ chatEndpoint, mode }: WorkspaceClientProps) {
           <textarea
             value={text}
             onChange={(event) => setText(event.target.value)}
-            placeholder="Reply..."
+            placeholder="Ask your question..."
             disabled={busy}
           />
 

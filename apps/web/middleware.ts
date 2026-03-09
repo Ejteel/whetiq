@@ -95,12 +95,19 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return applyNoIndex(NextResponse.next());
   }
 
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET
-  });
-  if (token) {
-    return applyNoIndex(NextResponse.next());
+  try {
+    const token = await getToken({
+      req: request,
+      secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET
+    });
+    if (token) {
+      return applyNoIndex(NextResponse.next());
+    }
+  } catch {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", path || "/");
+    loginUrl.searchParams.set("error", "config");
+    return applyNoIndex(NextResponse.redirect(loginUrl));
   }
 
   const loginUrl = new URL("/login", request.url);

@@ -1,19 +1,24 @@
 export type Provider = "openai" | "anthropic" | "gemini";
+export type RuntimeMode = "demo" | "private_live";
+export type RuntimeSource = "forced_demo_endpoint" | "demo_env" | "app_runtime_mode" | "control_plane" | "fallback_default";
 
 export interface SendInput {
   provider: Provider;
   model: string;
   text: string;
   enhance?: boolean;
-  runtimeModeOverride?: RuntimeMode;
+  runtimeModeOverride?: {
+    mode: RuntimeMode;
+    source: RuntimeSource;
+  };
 }
 
 export interface SendOutput {
   text: string;
   transformedPrompt: string;
+  runtimeMode: RuntimeMode;
+  runtimeSource: RuntimeSource;
 }
-
-type RuntimeMode = "demo" | "private_live";
 
 const MODE_CACHE_MS = 15000;
 let cachedMode: RuntimeMode | null = null;
@@ -26,19 +31,19 @@ function parseRuntimeMode(value: string | undefined): RuntimeMode | null {
   return null;
 }
 
-async function resolveRuntimeMode(): Promise<RuntimeMode> {
+async function resolveRuntimeMode(): Promise<{ mode: RuntimeMode; source: RuntimeSource }> {
   if (process.env.DEMO_MODE === "true") {
-    return "demo";
+    return { mode: "demo", source: "demo_env" };
   }
 
   const explicit = parseRuntimeMode(process.env.APP_RUNTIME_MODE);
   if (explicit) {
-    return explicit;
+    return { mode: explicit, source: "app_runtime_mode" };
   }
 
   const now = Date.now();
   if (cachedMode && now - cachedAt < MODE_CACHE_MS) {
-    return cachedMode;
+    return { mode: cachedMode, source: "control_plane" };
   }
 
   const settingsUrl = process.env.CONTROL_PLANE_SETTINGS_URL;
@@ -46,7 +51,7 @@ async function resolveRuntimeMode(): Promise<RuntimeMode> {
   const serviceToken = process.env.CONTROL_PLANE_SERVICE_TOKEN;
 
   if (!settingsUrl || !appId || !serviceToken) {
-    return "private_live";
+    return { mode: "private_live", source: "fallback_default" };
   }
 
   try {
@@ -57,7 +62,7 @@ async function resolveRuntimeMode(): Promise<RuntimeMode> {
       cache: "no-store"
     });
     if (!response.ok) {
-      return "private_live";
+      return { mode: "private_live", source: "fallback_default" };
     }
 
     const payload = (await response.json()) as { mode?: string };
@@ -65,13 +70,13 @@ async function resolveRuntimeMode(): Promise<RuntimeMode> {
     if (remote) {
       cachedMode = remote;
       cachedAt = now;
-      return remote;
+      return { mode: remote, source: "control_plane" };
     }
   } catch {
-    return "private_live";
+    return { mode: "private_live", source: "fallback_default" };
   }
 
-  return "private_live";
+  return { mode: "private_live", source: "fallback_default" };
 }
 
 function buildTransformedPrompt(input: SendInput): string {
@@ -171,7 +176,7 @@ async function sendGemini(model: string, prompt: string, apiKey: string): Promis
   return data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("") ?? "No response content";
 }
 
-function buildDemoResponse(input: SendInput, transformedPrompt: string): SendOutput {
+function buildDemoResponse(input: SendInput, transformedPrompt: string, runtimeSource: RuntimeSource): SendOutput {
   const words = input.text.trim().split(/\s+/).filter(Boolean).length;
   const preview = input.text.trim().slice(0, 180) || "No user input captured.";
 
@@ -197,16 +202,19 @@ function buildDemoResponse(input: SendInput, transformedPrompt: string): SendOut
 
   return {
     text,
-    transformedPrompt
+    transformedPrompt,
+    runtimeMode: "demo",
+    runtimeSource
   };
 }
 
 export async function sendProviderMessage(input: SendInput): Promise<SendOutput> {
   const transformedPrompt = buildTransformedPrompt(input);
-  const mode = input.runtimeModeOverride ?? (await resolveRuntimeMode());
+  const runtime = input.runtimeModeOverride ?? (await resolveRuntimeMode());
+  const mode = runtime.mode;
 
   if (mode === "demo") {
-    return buildDemoResponse(input, transformedPrompt);
+    return buildDemoResponse(input, transformedPrompt, runtime.source);
   }
 
   if (input.provider === "openai") {
@@ -214,7 +222,12 @@ export async function sendProviderMessage(input: SendInput): Promise<SendOutput>
     if (!key) {
       throw new Error("OPENAI_API_KEY is not set");
     }
-    return { text: await sendOpenAI(input.model, transformedPrompt, key), transformedPrompt };
+    return {
+      text: await sendOpenAI(input.model, transformedPrompt, key),
+      transformedPrompt,
+      runtimeMode: runtime.mode,
+      runtimeSource: runtime.source
+    };
   }
 
   if (input.provider === "anthropic") {
@@ -222,7 +235,12 @@ export async function sendProviderMessage(input: SendInput): Promise<SendOutput>
     if (!key) {
       throw new Error("ANTHROPIC_API_KEY is not set");
     }
-    return { text: await sendAnthropic(input.model, transformedPrompt, key), transformedPrompt };
+    return {
+      text: await sendAnthropic(input.model, transformedPrompt, key),
+      transformedPrompt,
+      runtimeMode: runtime.mode,
+      runtimeSource: runtime.source
+    };
   }
 
   const key = process.env.GEMINI_API_KEY;
@@ -230,5 +248,10 @@ export async function sendProviderMessage(input: SendInput): Promise<SendOutput>
     throw new Error("GEMINI_API_KEY is not set");
   }
 
-  return { text: await sendGemini(input.model, transformedPrompt, key), transformedPrompt };
+  return {
+    text: await sendGemini(input.model, transformedPrompt, key),
+    transformedPrompt,
+    runtimeMode: runtime.mode,
+    runtimeSource: runtime.source
+  };
 }

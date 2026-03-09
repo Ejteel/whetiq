@@ -12,13 +12,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const output = await sendProviderMessage({
       ...input,
-      runtimeModeOverride: "demo"
+      runtimeModeOverride: {
+        mode: "demo",
+        source: "forced_demo_endpoint"
+      }
     });
 
     return NextResponse.json({
       text: output.text,
       final: {
         transformedPrompt: output.transformedPrompt
+      },
+      runtime: {
+        mode: output.runtimeMode,
+        source: output.runtimeSource
       }
     });
   } catch (error) {

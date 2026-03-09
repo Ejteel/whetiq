@@ -15,6 +15,9 @@
     "build": "tsc -b",
     "typecheck": "tsc -b --pretty false",
     "test": "node --test tests/*.test.mjs",
+    "test:e2e": "npx playwright test",
+    "test:e2e:local": "WEB_BASE_URL=http://127.0.0.1:3001 ADMIN_BASE_URL=http://127.0.0.1:3010 npx playwright test",
+    "test:e2e:headed": "npx playwright test --headed",
     "lint": "echo 'lint not yet configured'"
   },
   "workspaces": [
@@ -22,6 +25,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/better-sqlite3": "^7.6.13",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

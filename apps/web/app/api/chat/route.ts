@@ -16,6 +16,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       text: output.text,
       final: {
         transformedPrompt: output.transformedPrompt
+      },
+      runtime: {
+        mode: output.runtimeMode,
+        source: output.runtimeSource
       }
     });
   } catch (error) {

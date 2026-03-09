@@ -67,19 +67,29 @@ export default function InternalPage() {
 
   const canOperate = role === "operator" || role === "super_admin";
   const canManageUsers = role === "super_admin";
+  const webBase = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "https://whetiq.com";
 
   return (
     <main style={{ padding: 24, maxWidth: 980, margin: "0 auto" }}>
       <h1>Internal Control Console</h1>
       <p>Role: {role ?? "loading"}</p>
-      <p style={{ color: "#5c5546" }}>Runtime mode controls apply to connected application behavior.</p>
+      <p style={{ color: "#5c5546" }}>
+        Runtime mode controls apply to the private workspace experience. Public demo workspace always stays in demo mode.
+      </p>
 
       <section style={{ border: "1px solid #d6cebf", background: "#fffaf2", borderRadius: 12, padding: 18, marginBottom: 16 }}>
         <h2>Aggregator Runtime Mode</h2>
         <p>Current mode: <strong>{mode}</strong></p>
+        <p style={{ marginTop: 4, color: "#5c5546" }}>
+          Affects: <code>/private-workspace</code>. Does not change: <code>/workspace</code>.
+        </p>
         <div style={{ display: "flex", gap: 10 }}>
           <button type="button" disabled={!canOperate} onClick={() => void updateMode("demo")}>Set Demo</button>
           <button type="button" disabled={!canOperate} onClick={() => void updateMode("private_live")}>Set Private Live</button>
+        </div>
+        <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
+          <a href={`${webBase}/workspace`} target="_blank" rel="noreferrer">Open Public Demo Workspace</a>
+          <a href={`${webBase}/private-workspace`} target="_blank" rel="noreferrer">Open Private Workspace</a>
         </div>
       </section>
 

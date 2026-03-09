@@ -79,6 +79,13 @@ After deploy:
 5. Send chat input and confirm:
    - Demo mode: receives "Demo Mode Response"
    - Real mode: receives provider response
+6. Confirm login page behavior:
+   - Configured providers render as buttons.
+   - Missing providers show setup guidance (no black-screen server error).
+
+For repeatable browser QA and pilot UX findings format, use:
+- `npm run test:e2e`
+- [docs/PILOT_UX_QA_PROTOCOL.md](./PILOT_UX_QA_PROTOCOL.md)
 
 ## 5) Operational Safety
 - Never commit secrets to git.
