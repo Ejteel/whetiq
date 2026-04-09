@@ -2,6 +2,10 @@ import { getAdapter } from "@mvp/adapters";
 import {
   applyProviderOverride,
   buildCanonicalPromptSpec,
+  COST_PER_TOKEN,
+  DEFAULT_MAX_CONTEXT_MESSAGES,
+  DEFAULT_MAX_INPUT_TOKENS,
+  DEFAULT_MAX_OUTPUT_TOKENS,
   enforceTokenBudget,
   nowIso,
   type ContentBlock,
@@ -59,8 +63,8 @@ export class ChatService {
     const modelConfig: ModelConfig = {
       provider: input.provider,
       model: input.model,
-      maxInputTokens: 64000,
-      maxOutputTokens: 4096
+      maxInputTokens: DEFAULT_MAX_INPUT_TOKENS,
+      maxOutputTokens: DEFAULT_MAX_OUTPUT_TOKENS
     };
 
     let canonicalSpec = buildCanonicalPromptSpec({
@@ -69,7 +73,7 @@ export class ChatService {
       projectInstructions: ["Keep responses reproducible and auditable."],
       contextWindow: {
         messages: priorMessages,
-        maxMessages: 20
+        maxMessages: DEFAULT_MAX_CONTEXT_MESSAGES
       },
       userDraft: input.text
     });
@@ -91,7 +95,11 @@ export class ChatService {
     });
 
     const adapter = getAdapter(input.provider);
-    const request = adapter.buildRequest(canonicalSpec, { messages: priorMessages, maxMessages: 20 }, modelConfig);
+    const request = adapter.buildRequest(
+      canonicalSpec,
+      { messages: priorMessages, maxMessages: DEFAULT_MAX_CONTEXT_MESSAGES },
+      modelConfig
+    );
     const apiKey = await this.resolveApiKey(input.provider);
     if (!apiKey) {
       throw new Error(`No API key configured for provider: ${input.provider}`);
@@ -138,7 +146,7 @@ export class ChatService {
         tokenIn: budgetedPrompt.promptTokens,
         tokenOut: Math.ceil(collected.length / 4),
         latencyMs,
-        costEstimate: Number(((budgetedPrompt.promptTokens + collected.length / 4) * 0.000002).toFixed(6))
+        costEstimate: Number(((budgetedPrompt.promptTokens + collected.length / 4) * COST_PER_TOKEN).toFixed(6))
       },
       createdAt: nowIso()
     };
