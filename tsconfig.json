@@ -4,6 +4,7 @@
     { "path": "./packages/core" },
     { "path": "./packages/adapters" },
     { "path": "./packages/storage" },
-    { "path": "./packages/api" }
+    { "path": "./packages/api" },
+    { "path": "./packages/auth" }
   ]
 }
