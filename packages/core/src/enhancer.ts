@@ -86,6 +86,21 @@ export function applyProviderOverride(
   };
 }
 
+export function serializeSpecToPromptString(spec: CanonicalPromptSpec): string {
+  return [
+    `ROLE: ${spec.role}`,
+    `OBJECTIVE: ${spec.objective}`,
+    "CONTEXT:",
+    ...spec.context.map((item) => `- ${item}`),
+    "CONSTRAINTS:",
+    ...spec.constraints.map((item) => `- ${item}`),
+    `OUTPUT_FORMAT: ${spec.outputFormat}`,
+    "QUALITY_BAR:",
+    ...spec.qualityBar.map((item) => `- ${item}`),
+    `USER_INPUT: ${spec.userDraft}`
+  ].join("\n");
+}
+
 export function estimateCharacterTokens(input: string): number {
   return Math.ceil(input.length / 4);
 }

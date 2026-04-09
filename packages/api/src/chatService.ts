@@ -9,27 +9,13 @@ import {
   enforceTokenBudget,
   nowIso,
   ProviderConfigError,
+  serializeSpecToPromptString,
   type ContentBlock,
   type Message,
   type ModelConfig
 } from "@mvp/core";
 import type { Repository } from "@mvp/storage";
 import type { SendMessageInput, SendMessageResult } from "./contracts.js";
-
-function stringifyPrompt(spec: ReturnType<typeof buildCanonicalPromptSpec>): string {
-  return [
-    `ROLE: ${spec.role}`,
-    `OBJECTIVE: ${spec.objective}`,
-    "CONTEXT:",
-    ...spec.context.map((item) => `- ${item}`),
-    "CONSTRAINTS:",
-    ...spec.constraints.map((item) => `- ${item}`),
-    `OUTPUT_FORMAT: ${spec.outputFormat}`,
-    "QUALITY_BAR:",
-    ...spec.qualityBar.map((item) => `- ${item}`),
-    `USER_INPUT: ${spec.userDraft}`
-  ].join("\n");
-}
 
 export class ChatService {
   constructor(
@@ -80,7 +66,7 @@ export class ChatService {
     });
 
     canonicalSpec = applyProviderOverride(canonicalSpec, pack, input.provider);
-    const renderedPrompt = stringifyPrompt(canonicalSpec);
+    const renderedPrompt = serializeSpecToPromptString(canonicalSpec);
     const budgetedPrompt = enforceTokenBudget(renderedPrompt, modelConfig);
 
     const runId = crypto.randomUUID();
