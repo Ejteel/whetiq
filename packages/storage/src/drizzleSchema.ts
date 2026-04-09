@@ -1,3 +1,6 @@
+/**
+ * @remarks SQLite schema - LOCAL DEVELOPMENT ONLY. New apps use Neon schema in their own apps/[name]/src/lib/schema.ts using pgTable.
+ */
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const projectsTable = sqliteTable("projects", {

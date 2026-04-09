@@ -1,3 +1,6 @@
+/**
+ * @remarks LOCAL DEVELOPMENT ONLY - not compatible with Vercel serverless. Use Neon/PostgreSQL in production.
+ */
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
