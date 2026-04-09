@@ -8,6 +8,7 @@ import {
   DEFAULT_MAX_OUTPUT_TOKENS,
   enforceTokenBudget,
   nowIso,
+  ProviderConfigError,
   type ContentBlock,
   type Message,
   type ModelConfig
@@ -102,7 +103,7 @@ export class ChatService {
     );
     const apiKey = await this.resolveApiKey(input.provider);
     if (!apiKey) {
-      throw new Error(`No API key configured for provider: ${input.provider}`);
+      throw new ProviderConfigError(input.provider);
     }
 
     let collected = "";
