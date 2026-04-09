@@ -256,22 +256,24 @@ export class SQLiteRepository implements Repository {
   }
 
   async updateRun(runId: string, patch: Partial<RunRecord>): Promise<void> {
+    const cleanPatch = Object.fromEntries(Object.entries({
+      threadId: patch.threadId,
+      userMessageId: patch.userMessageId,
+      provider: patch.provider,
+      model: patch.model,
+      transformedPromptSnapshot: patch.transformedPromptSnapshot,
+      rawResponseJson: patch.rawResponseJson ? JSON.stringify(patch.rawResponseJson) : undefined,
+      status: patch.status,
+      latencyMs: patch.latencyMs,
+      tokenIn: patch.tokenIn,
+      tokenOut: patch.tokenOut,
+      costEstimate: patch.costEstimate,
+      createdAt: patch.createdAt
+    }).filter(([, value]) => value !== undefined));
+
     this.db
       .update(runsTable)
-      .set({
-        threadId: patch.threadId,
-        userMessageId: patch.userMessageId,
-        provider: patch.provider,
-        model: patch.model,
-        transformedPromptSnapshot: patch.transformedPromptSnapshot,
-        rawResponseJson: patch.rawResponseJson ? JSON.stringify(patch.rawResponseJson) : undefined,
-        status: patch.status,
-        latencyMs: patch.latencyMs,
-        tokenIn: patch.tokenIn,
-        tokenOut: patch.tokenOut,
-        costEstimate: patch.costEstimate,
-        createdAt: patch.createdAt
-      })
+      .set(cleanPatch)
       .where(eq(runsTable.id, runId))
       .run();
   }
