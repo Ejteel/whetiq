@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { EnhancerPack, Message, Project, Thread } from "@mvp/core";
+import { nowIso, type EnhancerPack, type Message, type Project, type Thread } from "@mvp/core";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
@@ -46,7 +46,7 @@ export class SQLiteRepository implements Repository {
   }
 
   async createProject(input: Pick<Project, "name">): Promise<Project> {
-    const now = new Date().toISOString();
+    const now = nowIso();
     const project: Project = { id: crypto.randomUUID(), name: input.name, createdAt: now, updatedAt: now };
     this.db.insert(projectsTable).values({
       id: project.id,
@@ -68,7 +68,7 @@ export class SQLiteRepository implements Repository {
   }
 
   async createThread(input: Pick<Thread, "projectId" | "name" | "defaultProvider" | "defaultModel">): Promise<Thread> {
-    const now = new Date().toISOString();
+    const now = nowIso();
     const thread: Thread = {
       id: crypto.randomUUID(),
       projectId: input.projectId,
@@ -140,8 +140,8 @@ export class SQLiteRepository implements Repository {
         name: pack.name,
         version: pack.version,
         rulesJson: JSON.stringify(pack),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        createdAt: nowIso(),
+        updatedAt: nowIso()
       })
       .onConflictDoUpdate({
         target: enhancerPacksTable.id,
@@ -149,7 +149,7 @@ export class SQLiteRepository implements Repository {
           name: pack.name,
           version: pack.version,
           rulesJson: JSON.stringify(pack),
-          updatedAt: new Date().toISOString()
+          updatedAt: nowIso()
         }
       })
       .run();
@@ -186,7 +186,7 @@ export class SQLiteRepository implements Repository {
           provider: account.provider,
           keychainRef: account.keychainRef,
           configJson: JSON.stringify(account.configJson),
-          updatedAt: new Date().toISOString()
+          updatedAt: nowIso()
         }
       })
       .run();

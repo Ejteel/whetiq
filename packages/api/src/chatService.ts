@@ -3,16 +3,13 @@ import {
   applyProviderOverride,
   buildCanonicalPromptSpec,
   enforceTokenBudget,
+  nowIso,
   type ContentBlock,
   type Message,
   type ModelConfig
 } from "@mvp/core";
 import type { Repository } from "@mvp/storage";
 import type { SendMessageInput, SendMessageResult } from "./contracts.js";
-
-function nowIso(): string {
-  return new Date().toISOString();
-}
 
 function stringifyPrompt(spec: ReturnType<typeof buildCanonicalPromptSpec>): string {
   return [
