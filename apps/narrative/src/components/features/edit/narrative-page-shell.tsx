@@ -5,6 +5,7 @@ import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { EditBar } from "./edit-bar";
+import { ParserOverlay } from "../parser/parser-overlay";
 import { AISummaryPanel } from "../hero/ai-summary-panel";
 import { HeroIdentity } from "../hero/hero-identity";
 import { TimelineSpine } from "../timeline/timeline-spine";
@@ -47,6 +48,7 @@ export function NarrativePageShell({
     useState<NarrativeProfile>(publishedProfile);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isParserOpen, setIsParserOpen] = useState(false);
 
   const activeProfile = useMemo(() => {
     if (!editMode || isPreviewMode || !draft) {
@@ -57,6 +59,7 @@ export function NarrativePageShell({
   }, [draft, editMode, isPreviewMode, published]);
 
   const hasUnpublishedChanges = profilesDiffer(draft, published);
+  const isProfileEmpty = activeProfile.timeline.length === 0;
 
   async function savePatch(
     patch: Partial<
@@ -148,10 +151,21 @@ export function NarrativePageShell({
         <EditBar
           isPreviewMode={isPreviewMode}
           hasUnpublishedChanges={hasUnpublishedChanges}
+          isProfileEmpty={isProfileEmpty}
           saveState={saveState}
           errorMessage={errorMessage}
+          onOpenParser={() => setIsParserOpen(true)}
           onTogglePreview={togglePreviewMode}
           onPublish={publishDraft}
+        />
+      ) : null}
+      {editMode && !isPreviewMode ? (
+        <ParserOverlay
+          slug={slug}
+          isOpen={isParserOpen}
+          profile={activeProfile}
+          onClose={() => setIsParserOpen(false)}
+          onApplyPatch={savePatch}
         />
       ) : null}
       <section className="hero-section">

@@ -5,8 +5,10 @@ import type { ReactElement } from "react";
 interface EditBarProps {
   isPreviewMode: boolean;
   hasUnpublishedChanges: boolean;
+  isProfileEmpty: boolean;
   saveState: "idle" | "saving" | "saved" | "error" | "published";
   errorMessage: string | null;
+  onOpenParser: () => void;
   onTogglePreview: () => void;
   onPublish: () => void;
 }
@@ -42,8 +44,10 @@ function getStatusLabel(
 export function EditBar({
   isPreviewMode,
   hasUnpublishedChanges,
+  isProfileEmpty,
   saveState,
   errorMessage,
+  onOpenParser,
   onTogglePreview,
   onPublish,
 }: EditBarProps): ReactElement {
@@ -60,6 +64,15 @@ export function EditBar({
         ) : null}
       </div>
       <div className="edit-bar-actions">
+        <button
+          className={
+            isProfileEmpty ? "ghost-button edit-bar-import" : "ghost-button"
+          }
+          type="button"
+          onClick={onOpenParser}
+        >
+          {isProfileEmpty ? "Import your resume →" : "Re-import resume"}
+        </button>
         <button
           className="ghost-button"
           type="button"
