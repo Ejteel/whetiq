@@ -6,6 +6,7 @@
     { "path": "./packages/storage" },
     { "path": "./packages/api" },
     { "path": "./packages/auth" },
-    { "path": "./apps/narrative" }
+    { "path": "./apps/narrative" },
+    { "path": "./apps/landing" }
   ]
 }
