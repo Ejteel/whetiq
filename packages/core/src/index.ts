@@ -6,3 +6,4 @@ export * from "./routing.js";
 export * from "./config.js";
 export * from "./errors.js";
 export * from "./utils.js";
+export * from "./e2e-state.js";

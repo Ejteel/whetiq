@@ -10,9 +10,11 @@ import {
 import { analyticsSessionSchema } from "../types/analytics.types";
 
 export class AnalyticsRepository implements IAnalyticsRepository {
+  constructor(private readonly database = getDb) {}
+
   async createSession(session: AnalyticsSession): Promise<string> {
     const sessionId = crypto.randomUUID();
-    await getDb().insert(analyticsSessionsTable).values({
+    await this.database().insert(analyticsSessionsTable).values({
       id: sessionId,
       profileId: session.profileId,
       referrer: session.referrer,
@@ -33,7 +35,7 @@ export class AnalyticsRepository implements IAnalyticsRepository {
       return;
     }
 
-    await getDb()
+    await this.database()
       .insert(analyticsEventsTable)
       .values(
         events.map((event) => ({
@@ -53,7 +55,7 @@ export class AnalyticsRepository implements IAnalyticsRepository {
     from: Date,
     to: Date,
   ): Promise<AnalyticsSession[]> {
-    const rows = await getDb()
+    const rows = await this.database()
       .select({
         profileId: analyticsSessionsTable.profileId,
         referrer: analyticsSessionsTable.referrer,
@@ -79,7 +81,7 @@ export class AnalyticsRepository implements IAnalyticsRepository {
     from: Date,
     to: Date,
   ): Promise<AnalyticsSession[]> {
-    const rows = await getDb()
+    const rows = await this.database()
       .select({ profileId: profilesTable.id })
       .from(profilesTable)
       .where(eq(profilesTable.slug, slug))

@@ -10,6 +10,14 @@ import {
 } from "../../../../../lib/route-responses";
 import { parseSlugParams } from "../../../../../lib/route-params";
 
+export const draftProfileRouteDependencies = {
+  createBadRequestResponse,
+  createErrorResponse,
+  parseSlugParams,
+  profileService,
+  requireOwner,
+};
+
 /**
  * Returns the current draft for the authenticated owner.
  */
@@ -18,12 +26,15 @@ export async function GET(
   context: { params: Promise<{ slug: string }> },
 ): Promise<Response> {
   try {
-    await requireOwner();
-    const { slug } = await parseSlugParams(context.params);
-    const profile = await profileService.getDraftBySlug(slug);
+    await draftProfileRouteDependencies.requireOwner();
+    const { slug } = await draftProfileRouteDependencies.parseSlugParams(
+      context.params,
+    );
+    const profile =
+      await draftProfileRouteDependencies.profileService.getDraftBySlug(slug);
     return Response.json(profileSchema.parse(profile));
   } catch (error) {
-    return createErrorResponse(error);
+    return draftProfileRouteDependencies.createErrorResponse(error);
   }
 }
 
@@ -35,17 +46,25 @@ export async function PATCH(
   context: { params: Promise<{ slug: string }> },
 ): Promise<Response> {
   try {
-    await requireOwner();
+    await draftProfileRouteDependencies.requireOwner();
     const body = await request.json();
     const result = profilePatchSchema.safeParse(body);
     if (!result.success) {
-      return createBadRequestResponse(result.error);
+      return draftProfileRouteDependencies.createBadRequestResponse(
+        result.error,
+      );
     }
 
-    const { slug } = await parseSlugParams(context.params);
-    const profile = await profileService.saveDraft(slug, result.data);
+    const { slug } = await draftProfileRouteDependencies.parseSlugParams(
+      context.params,
+    );
+    const profile =
+      await draftProfileRouteDependencies.profileService.saveDraft(
+        slug,
+        result.data,
+      );
     return Response.json(profileSchema.parse(profile));
   } catch (error) {
-    return createErrorResponse(error);
+    return draftProfileRouteDependencies.createErrorResponse(error);
   }
 }

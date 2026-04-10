@@ -7,6 +7,8 @@ import { defaultLandingProfile } from "../lib/default-profile";
 type LandingVersionName = "draft" | "published";
 
 export class LandingRepository {
+  constructor(private readonly database = getDb) {}
+
   async getDraft(): Promise<LandingProfile> {
     return this.#getVersion("draft");
   }
@@ -16,7 +18,7 @@ export class LandingRepository {
   }
 
   async saveDraft(data: LandingProfile): Promise<void> {
-    const updatedRows = await getDb()
+    const updatedRows = await this.database()
       .update(landingVersionsTable)
       .set({ data, updatedAt: new Date() })
       .where(eq(landingVersionsTable.version, "draft"))
@@ -30,7 +32,7 @@ export class LandingRepository {
 
   async publish(): Promise<void> {
     const draft = await this.getDraft();
-    const updatedRows = await getDb()
+    const updatedRows = await this.database()
       .update(landingVersionsTable)
       .set({ data: draft, publishedAt: new Date(), updatedAt: new Date() })
       .where(eq(landingVersionsTable.version, "published"))
@@ -43,7 +45,7 @@ export class LandingRepository {
   }
 
   async #getVersion(version: LandingVersionName): Promise<LandingProfile> {
-    const rows = await getDb()
+    const rows = await this.database()
       .select({ data: landingVersionsTable.data })
       .from(landingVersionsTable)
       .where(eq(landingVersionsTable.version, version))
@@ -58,7 +60,7 @@ export class LandingRepository {
   }
 
   async #seedVersions(): Promise<void> {
-    await getDb()
+    await this.database()
       .insert(landingVersionsTable)
       .values([
         {

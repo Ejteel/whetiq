@@ -9,19 +9,26 @@ import {
   createErrorResponse,
 } from "../../../lib/route-responses";
 
+export const parserRouteDependencies = {
+  createBadRequestResponse,
+  createErrorResponse,
+  parserService,
+  requireOwner,
+};
+
 /**
  * Parses an uploaded or pasted career document into structured profile data.
  */
 export async function POST(request: Request): Promise<Response> {
   try {
-    await requireOwner();
+    await parserRouteDependencies.requireOwner();
     const body = await request.json();
     const result = parserRequestSchema.safeParse(body);
     if (!result.success) {
-      return createBadRequestResponse(result.error);
+      return parserRouteDependencies.createBadRequestResponse(result.error);
     }
 
-    const parsed = await parserService.parseDocument(
+    const parsed = await parserRouteDependencies.parserService.parseDocument(
       result.data.documentText,
       result.data.fileName,
       result.data.mimeType,
@@ -29,6 +36,6 @@ export async function POST(request: Request): Promise<Response> {
 
     return Response.json(parserResultSchema.parse(parsed));
   } catch (error) {
-    return createErrorResponse(error);
+    return parserRouteDependencies.createErrorResponse(error);
   }
 }

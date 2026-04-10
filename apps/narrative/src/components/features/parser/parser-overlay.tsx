@@ -3,6 +3,7 @@
 import type { NarrativeProfile, ParserResult, TimelineEntry } from "@mvp/core";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
+import { toNarrativePath } from "../../../config/app.config";
 
 type ReviewResolution = "unresolved" | "accepted" | "dismissed";
 type UnmatchedResolution = "unresolved" | "dismissed" | "placed";
@@ -173,7 +174,7 @@ export function ParserOverlay({
     setPhase("parsing");
     setSourcePreview(sourceText);
 
-    const response = await fetch("/api/parser", {
+    const response = await fetch(toNarrativePath("/api/parser"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

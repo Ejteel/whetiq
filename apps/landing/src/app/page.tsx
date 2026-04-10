@@ -6,6 +6,8 @@ import { LandingPageView } from "../components/view/landing-page-view";
 import { landingService } from "../lib/services";
 import { toWhetIQSession } from "../lib/session";
 
+export const dynamic = "force-dynamic";
+
 export default async function LandingPage(): Promise<ReactElement> {
   const session = await getServerSession(authOptions);
   const editMode = isOwner(toWhetIQSession(session));

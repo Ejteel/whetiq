@@ -4,6 +4,7 @@ import type { NarrativeProfile, TimelineEntry } from "@mvp/core";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { toNarrativePath } from "../../../config/app.config";
 import { AnalyticsDashboard } from "../analytics/analytics-dashboard";
 import { NarrativeAnalytics } from "../analytics/narrative-analytics";
 import { EditBar } from "./edit-bar";
@@ -83,11 +84,14 @@ export function NarrativePageShell({
     setSaveState("saving");
     setErrorMessage(null);
 
-    const response = await fetch(`/api/profile/${slug}/draft`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch),
-    });
+    const response = await fetch(
+      toNarrativePath(`/api/profile/${slug}/draft`),
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      },
+    );
 
     if (!response.ok) {
       setSaveState("error");
@@ -123,9 +127,12 @@ export function NarrativePageShell({
     setSaveState("saving");
     setErrorMessage(null);
 
-    const response = await fetch(`/api/profile/${slug}/publish`, {
-      method: "POST",
-    });
+    const response = await fetch(
+      toNarrativePath(`/api/profile/${slug}/publish`),
+      {
+        method: "POST",
+      },
+    );
 
     if (!response.ok) {
       setSaveState("error");

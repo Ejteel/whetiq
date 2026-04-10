@@ -19,9 +19,17 @@ function toWhetIQSession(session: Session | null): WhetIQSession | null {
   };
 }
 
+export const requireOwnerDependencies = {
+  authOptions,
+  getServerSession,
+  isOwner,
+};
+
 export async function requireOwner(): Promise<void> {
-  const session = await getServerSession(authOptions);
-  if (!isOwner(toWhetIQSession(session))) {
+  const session = await requireOwnerDependencies.getServerSession(
+    requireOwnerDependencies.authOptions,
+  );
+  if (!requireOwnerDependencies.isOwner(toWhetIQSession(session))) {
     throw new UnauthorizedError();
   }
 }

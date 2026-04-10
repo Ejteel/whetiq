@@ -3,6 +3,7 @@
 import type { AnalyticsSummary } from "../../../types/analytics.types";
 import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
+import { toNarrativePath } from "../../../config/app.config";
 
 interface AnalyticsDashboardProps {
   slug: string;
@@ -39,7 +40,9 @@ export function AnalyticsDashboard({
     async function loadSummary(): Promise<void> {
       setIsLoading(true);
       const response = await fetch(
-        `/api/analytics/${slug}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+        toNarrativePath(
+          `/api/analytics/${slug}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+        ),
       );
 
       if (!response.ok) {

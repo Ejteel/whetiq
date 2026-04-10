@@ -4,6 +4,7 @@ import type { NarrativeProfile } from "@mvp/core";
 import type { AnalyticsBatchInput } from "../../../types/analytics.types";
 import type { ReactElement } from "react";
 import { useEffect, useRef } from "react";
+import { toNarrativePath } from "../../../config/app.config";
 import { analyticsEventNames } from "../../../config/analytics.config";
 
 interface NarrativeAnalyticsProps {
@@ -95,11 +96,14 @@ export function NarrativeAnalytics({
       queueRef.current = [];
 
       if (useBeacon) {
-        navigator.sendBeacon("/api/analytics", JSON.stringify(batch));
+        navigator.sendBeacon(
+          toNarrativePath("/api/analytics"),
+          JSON.stringify(batch),
+        );
         return;
       }
 
-      const response = await fetch("/api/analytics", {
+      const response = await fetch(toNarrativePath("/api/analytics"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(batch),

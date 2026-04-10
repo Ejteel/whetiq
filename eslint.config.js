@@ -11,6 +11,7 @@ export default tseslint.config(
       "scripts/**/*.mjs",
       "tests/**/*.mjs",
       "eslint.config.js",
+      "playwright.config.ts",
       "**/*.mjs",
       "**/*.js"
     ]
@@ -20,6 +21,7 @@ export default tseslint.config(
     extends: [eslint.configs.recommended, ...tseslint.configs.strictTypeChecked],
     languageOptions: {
       parserOptions: {
+        allowDefaultProject: ["tests/**/*.ts", "playwright.config.ts"],
         projectService: true,
         tsconfigRootDir: import.meta.dirname
       }
@@ -39,6 +41,15 @@ export default tseslint.config(
       "@typescript-eslint/restrict-template-expressions": "off",
       "@typescript-eslint/triple-slash-reference": "off",
       "no-console": "warn"
+    }
+  },
+  {
+    files: ["tests/**/*.ts"],
+    rules: {
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/no-floating-promises": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off"
     }
   }
 );

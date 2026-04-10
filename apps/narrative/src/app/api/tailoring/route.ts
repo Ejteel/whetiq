@@ -8,6 +8,12 @@ import {
   createErrorResponse,
 } from "../../../lib/route-responses";
 
+export const tailoringRouteDependencies = {
+  createBadRequestResponse,
+  createErrorResponse,
+  tailoringService,
+};
+
 /**
  * Returns a context-tailored summary for a profile snapshot.
  */
@@ -16,15 +22,16 @@ export async function POST(request: Request): Promise<Response> {
     const body = await request.json();
     const result = tailoringRequestSchema.safeParse(body);
     if (!result.success) {
-      return createBadRequestResponse(result.error);
+      return tailoringRouteDependencies.createBadRequestResponse(result.error);
     }
 
-    const summary = await tailoringService.tailorSummary(
-      result.data.profile,
-      result.data.context,
-    );
+    const summary =
+      await tailoringRouteDependencies.tailoringService.tailorSummary(
+        result.data.profile,
+        result.data.context,
+      );
     return Response.json(tailoringResponseSchema.parse({ summary }));
   } catch (error) {
-    return createErrorResponse(error);
+    return tailoringRouteDependencies.createErrorResponse(error);
   }
 }

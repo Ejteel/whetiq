@@ -13,6 +13,8 @@ interface ProfilePageProps {
   searchParams: Promise<{ ctx?: string; preview?: string }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage({
   params,
   searchParams,

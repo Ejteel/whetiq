@@ -9,16 +9,24 @@ import {
   createErrorResponse,
 } from "../../../../lib/route-responses";
 
+export const landingDraftRouteDependencies = {
+  createBadRequestResponse,
+  createErrorResponse,
+  landingService,
+  requireOwner,
+};
+
 /**
  * Returns the authenticated owner's landing draft.
  */
 export async function GET(): Promise<Response> {
   try {
-    await requireOwner();
-    const profile = await landingService.getDraft();
+    await landingDraftRouteDependencies.requireOwner();
+    const profile =
+      await landingDraftRouteDependencies.landingService.getDraft();
     return Response.json(landingProfileSchema.parse(profile));
   } catch (error) {
-    return createErrorResponse(error);
+    return landingDraftRouteDependencies.createErrorResponse(error);
   }
 }
 
@@ -27,16 +35,19 @@ export async function GET(): Promise<Response> {
  */
 export async function PATCH(request: Request): Promise<Response> {
   try {
-    await requireOwner();
+    await landingDraftRouteDependencies.requireOwner();
     const body = await request.json();
     const result = landingProfilePatchSchema.safeParse(body);
     if (!result.success) {
-      return createBadRequestResponse(result.error);
+      return landingDraftRouteDependencies.createBadRequestResponse(
+        result.error,
+      );
     }
 
-    const profile = await landingService.saveDraft(result.data);
+    const profile =
+      await landingDraftRouteDependencies.landingService.saveDraft(result.data);
     return Response.json(landingProfileSchema.parse(profile));
   } catch (error) {
-    return createErrorResponse(error);
+    return landingDraftRouteDependencies.createErrorResponse(error);
   }
 }

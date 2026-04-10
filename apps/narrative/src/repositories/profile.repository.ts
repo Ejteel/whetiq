@@ -8,6 +8,8 @@ import { profilesTable, profileVersionsTable } from "../lib/schema";
 type ProfileVersionName = "draft" | "published";
 
 export class ProfileRepository implements IProfileRepository {
+  constructor(private readonly database = getDb) {}
+
   async getDraft(profileId: string): Promise<NarrativeProfile> {
     return this.#getVersion(profileId, "draft");
   }
@@ -25,7 +27,7 @@ export class ProfileRepository implements IProfileRepository {
   }
 
   async saveDraft(profileId: string, data: NarrativeProfile): Promise<void> {
-    const updatedRows = await getDb()
+    const updatedRows = await this.database()
       .update(profileVersionsTable)
       .set({ data, updatedAt: new Date() })
       .where(
@@ -43,7 +45,7 @@ export class ProfileRepository implements IProfileRepository {
 
   async publish(profileId: string): Promise<void> {
     const draft = await this.getDraft(profileId);
-    const updatedRows = await getDb()
+    const updatedRows = await this.database()
       .update(profileVersionsTable)
       .set({ data: draft, publishedAt: new Date(), updatedAt: new Date() })
       .where(
@@ -63,7 +65,7 @@ export class ProfileRepository implements IProfileRepository {
     profileId: string,
     version: ProfileVersionName,
   ): Promise<NarrativeProfile> {
-    const rows = await getDb()
+    const rows = await this.database()
       .select({ data: profileVersionsTable.data })
       .from(profileVersionsTable)
       .where(
@@ -90,7 +92,7 @@ export class ProfileRepository implements IProfileRepository {
     slug: string,
     version: ProfileVersionName,
   ): Promise<NarrativeProfile> {
-    const rows = await getDb()
+    const rows = await this.database()
       .select({ profileId: profilesTable.id })
       .from(profilesTable)
       .where(eq(profilesTable.slug, slug))
