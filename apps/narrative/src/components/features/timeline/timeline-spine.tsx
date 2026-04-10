@@ -1,10 +1,14 @@
+"use client";
+
 import type { NarrativeProfile } from "@mvp/core";
 import type { ReactElement } from "react";
-import { TimelineCard } from "./timeline-card.js";
-import { YearMarker } from "./year-marker.js";
+import { TimelineCard } from "./timeline-card";
+import { YearMarker } from "./year-marker";
 
 interface TimelineSpineProps {
   profile: NarrativeProfile;
+  editMode: boolean;
+  onSaveEntry: (entry: NarrativeProfile["timeline"][number]) => Promise<void>;
 }
 
 function getEntrySide(
@@ -28,7 +32,11 @@ function getVisibleYears(profile: NarrativeProfile): number[] {
   return [...years].sort((left, right) => right - left);
 }
 
-export function TimelineSpine({ profile }: TimelineSpineProps): ReactElement {
+export function TimelineSpine({
+  profile,
+  editMode,
+  onSaveEntry,
+}: TimelineSpineProps): ReactElement {
   const years = getVisibleYears(profile);
 
   return (
@@ -50,6 +58,8 @@ export function TimelineSpine({ profile }: TimelineSpineProps): ReactElement {
             key={entry.id}
             entry={entry}
             side={getEntrySide(entry.track)}
+            editMode={editMode}
+            onSave={onSaveEntry}
           />
         ))}
       </div>

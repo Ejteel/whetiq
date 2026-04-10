@@ -1,18 +1,18 @@
 import type { AnalyticsEvent, AnalyticsSession } from "@mvp/core";
 import { and, eq, gte, lte } from "drizzle-orm";
 import type { IAnalyticsRepository } from "@mvp/storage";
-import { db } from "../lib/db.js";
+import { getDb } from "../lib/db";
 import {
   analyticsEventsTable,
   analyticsSessionsTable,
   profilesTable,
-} from "../lib/schema.js";
-import { analyticsSessionSchema } from "../types/analytics.types.js";
+} from "../lib/schema";
+import { analyticsSessionSchema } from "../types/analytics.types";
 
 export class AnalyticsRepository implements IAnalyticsRepository {
   async createSession(session: AnalyticsSession): Promise<string> {
     const sessionId = crypto.randomUUID();
-    await db.insert(analyticsSessionsTable).values({
+    await getDb().insert(analyticsSessionsTable).values({
       id: sessionId,
       profileId: session.profileId,
       referrer: session.referrer,
@@ -33,17 +33,19 @@ export class AnalyticsRepository implements IAnalyticsRepository {
       return;
     }
 
-    await db.insert(analyticsEventsTable).values(
-      events.map((event) => ({
-        id: crypto.randomUUID(),
-        sessionId: event.sessionId,
-        profileId: event.profileId,
-        eventName: event.eventName,
-        payload: event.payload,
-        occurredAt: event.occurredAt,
-        sequenceNumber: event.sequenceNumber,
-      })),
-    );
+    await getDb()
+      .insert(analyticsEventsTable)
+      .values(
+        events.map((event) => ({
+          id: crypto.randomUUID(),
+          sessionId: event.sessionId,
+          profileId: event.profileId,
+          eventName: event.eventName,
+          payload: event.payload,
+          occurredAt: event.occurredAt,
+          sequenceNumber: event.sequenceNumber,
+        })),
+      );
   }
 
   async getSessionsByProfile(
@@ -51,7 +53,7 @@ export class AnalyticsRepository implements IAnalyticsRepository {
     from: Date,
     to: Date,
   ): Promise<AnalyticsSession[]> {
-    const rows = await db
+    const rows = await getDb()
       .select({
         profileId: analyticsSessionsTable.profileId,
         referrer: analyticsSessionsTable.referrer,
@@ -77,7 +79,7 @@ export class AnalyticsRepository implements IAnalyticsRepository {
     from: Date,
     to: Date,
   ): Promise<AnalyticsSession[]> {
-    const rows = await db
+    const rows = await getDb()
       .select({ profileId: profilesTable.id })
       .from(profilesTable)
       .where(eq(profilesTable.slug, slug))

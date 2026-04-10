@@ -399,6 +399,18 @@ button {
   color: var(--color-accent-gold);
 }
 
+.edit-bar-status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.edit-bar-error {
+  margin: 0;
+  color: #ff9c9c;
+  font-size: var(--text-sm);
+}
+
 .primary-button,
 .ghost-button,
 .icon-button {
@@ -439,6 +451,65 @@ button {
 .timeline-card-toggle:focus-visible {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
+}
+
+.inline-input,
+.inline-textarea {
+  width: 100%;
+  border: 1px dashed var(--color-border-active);
+  border-radius: 0.75rem;
+  background: rgb(26 36 56 / 0.72);
+  color: inherit;
+  padding: 0.5rem 0.75rem;
+}
+
+.inline-textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.hero-name.inline-input,
+.hero-identity-statement.inline-textarea {
+  font-family: var(--font-display), serif;
+}
+
+.hero-name.inline-input {
+  font-size: var(--text-5xl);
+  line-height: 1;
+  padding-left: 0;
+}
+
+.hero-identity-statement.inline-textarea {
+  font-size: var(--text-xl);
+  line-height: 1.4;
+}
+
+.hero-meta-value {
+  min-width: 8rem;
+}
+
+.timeline-editor {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.timeline-editor-field {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.timeline-editor-textarea {
+  min-height: 8rem;
+}
+
+.timeline-editor-checkbox {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
 }
 
 @keyframes hero-enter {

@@ -2,8 +2,8 @@ import type { NarrativeProfile } from "@mvp/core";
 import { ResourceNotFoundError } from "@mvp/core";
 import { and, desc, eq } from "drizzle-orm";
 import type { IProfileRepository } from "@mvp/storage";
-import { db } from "../lib/db.js";
-import { profilesTable, profileVersionsTable } from "../lib/schema.js";
+import { getDb } from "../lib/db";
+import { profilesTable, profileVersionsTable } from "../lib/schema";
 
 type ProfileVersionName = "draft" | "published";
 
@@ -25,7 +25,7 @@ export class ProfileRepository implements IProfileRepository {
   }
 
   async saveDraft(profileId: string, data: NarrativeProfile): Promise<void> {
-    const updatedRows = await db
+    const updatedRows = await getDb()
       .update(profileVersionsTable)
       .set({ data, updatedAt: new Date() })
       .where(
@@ -43,7 +43,7 @@ export class ProfileRepository implements IProfileRepository {
 
   async publish(profileId: string): Promise<void> {
     const draft = await this.getDraft(profileId);
-    const updatedRows = await db
+    const updatedRows = await getDb()
       .update(profileVersionsTable)
       .set({ data: draft, publishedAt: new Date(), updatedAt: new Date() })
       .where(
@@ -63,7 +63,7 @@ export class ProfileRepository implements IProfileRepository {
     profileId: string,
     version: ProfileVersionName,
   ): Promise<NarrativeProfile> {
-    const rows = await db
+    const rows = await getDb()
       .select({ data: profileVersionsTable.data })
       .from(profileVersionsTable)
       .where(
@@ -90,7 +90,7 @@ export class ProfileRepository implements IProfileRepository {
     slug: string,
     version: ProfileVersionName,
   ): Promise<NarrativeProfile> {
-    const rows = await db
+    const rows = await getDb()
       .select({ profileId: profilesTable.id })
       .from(profilesTable)
       .where(eq(profilesTable.slug, slug))

@@ -1,4 +1,4 @@
-import type { WhetIQSession } from "./types.js";
+import type { WhetIQSession } from "./types";
 
 export function isOwner(session: WhetIQSession | null): boolean {
   if (!session?.user.email) {

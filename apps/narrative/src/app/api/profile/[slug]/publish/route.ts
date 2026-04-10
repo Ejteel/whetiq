@@ -1,7 +1,7 @@
 import { requireOwner } from "@whetiq/auth";
-import { publishService } from "../../../../../lib/services.js";
-import { createErrorResponse } from "../../../../../lib/route-responses.js";
-import { parseSlugParams } from "../../../../../lib/route-params.js";
+import { publishService } from "../../../../../lib/services";
+import { createErrorResponse } from "../../../../../lib/route-responses";
+import { parseSlugParams } from "../../../../../lib/route-params";
 
 /**
  * Publishes the current draft for the authenticated owner.

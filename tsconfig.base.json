@@ -10,6 +10,8 @@
       "@mvp/adapters": ["packages/adapters/src/index.ts"],
       "@mvp/storage": ["packages/storage/src/index.ts"],
       "@mvp/api": ["packages/api/src/index.ts"],
+      "@mvp/api/services/narrative-parser": ["packages/api/src/services/narrative-parser.ts"],
+      "@mvp/api/services/narrative-tailoring": ["packages/api/src/services/narrative-tailoring.ts"],
       "@whetiq/auth": ["packages/auth/src/index.ts"]
     },
     "esModuleInterop": true,

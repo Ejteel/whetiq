@@ -1,12 +1,12 @@
-import { tailoringService } from "../../../lib/services.js";
+import { tailoringService } from "../../../lib/services";
 import {
   tailoringRequestSchema,
   tailoringResponseSchema,
-} from "../../../types/tailoring.types.js";
+} from "../../../types/tailoring.types";
 import {
   createBadRequestResponse,
   createErrorResponse,
-} from "../../../lib/route-responses.js";
+} from "../../../lib/route-responses";
 
 /**
  * Returns a context-tailored summary for a profile snapshot.

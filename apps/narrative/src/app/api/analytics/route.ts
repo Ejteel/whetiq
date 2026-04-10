@@ -1,9 +1,9 @@
-import { analyticsService } from "../../../lib/services.js";
-import { analyticsBatchSchema } from "../../../types/analytics.types.js";
+import { analyticsService } from "../../../lib/services";
+import { analyticsBatchSchema } from "../../../types/analytics.types";
 import {
   createBadRequestResponse,
   createErrorResponse,
-} from "../../../lib/route-responses.js";
+} from "../../../lib/route-responses";
 
 /**
  * Ingests a public batch of analytics events for the narrative profile.

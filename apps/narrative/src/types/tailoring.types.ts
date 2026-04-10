@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { profileSchema } from "./profile.types.js";
+import { profileSchema } from "./profile.types";
 
 export const tailoringContextSchema = z.object({
   token: z.string().optional(),

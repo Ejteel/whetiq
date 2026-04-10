@@ -2,13 +2,13 @@ import { requireOwner } from "@whetiq/auth";
 import {
   profilePatchSchema,
   profileSchema,
-} from "../../../../../types/profile.types.js";
-import { profileService } from "../../../../../lib/services.js";
+} from "../../../../../types/profile.types";
+import { profileService } from "../../../../../lib/services";
 import {
   createBadRequestResponse,
   createErrorResponse,
-} from "../../../../../lib/route-responses.js";
-import { parseSlugParams } from "../../../../../lib/route-params.js";
+} from "../../../../../lib/route-responses";
+import { parseSlugParams } from "../../../../../lib/route-params";
 
 /**
  * Returns the current draft for the authenticated owner.

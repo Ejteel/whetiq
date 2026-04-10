@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { analyticsEventNames } from "../config/analytics.config.js";
+import { analyticsEventNames } from "../config/analytics.config";
 
 export const analyticsEventSchema = z.object({
   eventName: z.enum(analyticsEventNames),

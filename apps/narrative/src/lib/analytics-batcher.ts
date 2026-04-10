@@ -1,4 +1,4 @@
-import type { AnalyticsBatchInput } from "../types/analytics.types.js";
+import type { AnalyticsBatchInput } from "../types/analytics.types";
 
 export function createAnalyticsBatch(
   input: AnalyticsBatchInput,

@@ -1,7 +1,7 @@
-import { profileSchema } from "../../../../types/profile.types.js";
-import { profileService } from "../../../../lib/services.js";
-import { createErrorResponse } from "../../../../lib/route-responses.js";
-import { parseSlugParams } from "../../../../lib/route-params.js";
+import { profileSchema } from "../../../../types/profile.types";
+import { profileService } from "../../../../lib/services";
+import { createErrorResponse } from "../../../../lib/route-responses";
+import { parseSlugParams } from "../../../../lib/route-params";
 
 /**
  * Returns the published profile for a public narrative URL.

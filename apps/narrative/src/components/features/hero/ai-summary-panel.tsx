@@ -3,13 +3,14 @@
 import type { NarrativeProfile } from "@mvp/core";
 import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
-import { detectContextLabel } from "../../../lib/context-detector.js";
-import { decodeContextToken } from "../../../lib/token-decoder.js";
+import { detectContextLabel } from "../../../lib/context-detector";
+import { decodeContextToken } from "../../../lib/token-decoder";
 
 interface AISummaryPanelProps {
   profile: NarrativeProfile;
   initialContextToken: string | null;
   editMode: boolean;
+  onSaveFallbackSummary: (value: string) => Promise<void>;
 }
 
 interface TailoringResponse {
@@ -40,6 +41,7 @@ export function AISummaryPanel({
   profile,
   initialContextToken,
   editMode,
+  onSaveFallbackSummary,
 }: AISummaryPanelProps): ReactElement {
   const [summary, setSummary] = useState(profile.summary.fallback);
   const [contextLabel, setContextLabel] = useState(
@@ -118,7 +120,28 @@ export function AISummaryPanel({
           <span />
         </div>
       ) : (
-        <p className="ai-summary-text">{summary}</p>
+        <>
+          {editMode ? (
+            <textarea
+              className="ai-summary-text inline-textarea"
+              defaultValue={summary}
+              maxLength={400}
+              onBlur={async (event): Promise<void> => {
+                const nextValue = event.currentTarget.value.trim();
+                setSummary(nextValue);
+                if (
+                  nextValue !== profile.summary.fallback &&
+                  nextValue.length > 0
+                ) {
+                  await onSaveFallbackSummary(nextValue);
+                }
+              }}
+              onChange={(event): void => setSummary(event.currentTarget.value)}
+            />
+          ) : (
+            <p className="ai-summary-text">{summary}</p>
+          )}
+        </>
       )}
     </aside>
   );

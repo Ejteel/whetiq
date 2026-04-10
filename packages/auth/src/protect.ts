@@ -1,9 +1,9 @@
 import { UnauthorizedError } from "@mvp/core";
 import { getServerSession } from "next-auth";
 import type { Session } from "next-auth";
-import { authOptions } from "./authOptions.js";
-import { isOwner } from "./isOwner.js";
-import type { WhetIQSession } from "./types.js";
+import { authOptions } from "./authOptions";
+import { isOwner } from "./isOwner";
+import type { WhetIQSession } from "./types";
 
 function toWhetIQSession(session: Session | null): WhetIQSession | null {
   if (!session?.user?.email) {

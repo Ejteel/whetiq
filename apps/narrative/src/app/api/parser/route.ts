@@ -1,13 +1,13 @@
 import { requireOwner } from "@whetiq/auth";
-import { parserService } from "../../../lib/services.js";
+import { parserService } from "../../../lib/services";
 import {
   parserRequestSchema,
   parserResultSchema,
-} from "../../../types/tailoring.types.js";
+} from "../../../types/tailoring.types";
 import {
   createBadRequestResponse,
   createErrorResponse,
-} from "../../../lib/route-responses.js";
+} from "../../../lib/route-responses";
 
 /**
  * Parses an uploaded or pasted career document into structured profile data.

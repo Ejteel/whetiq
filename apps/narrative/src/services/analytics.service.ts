@@ -1,4 +1,4 @@
-import type { AnalyticsBatchInput } from "../types/analytics.types.js";
+import type { AnalyticsBatchInput } from "../types/analytics.types";
 import type { AnalyticsSession } from "@mvp/core";
 import type { IAnalyticsRepository } from "@mvp/storage";
 

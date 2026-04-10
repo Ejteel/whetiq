@@ -1,6 +1,6 @@
 import type { NarrativeProfile } from "@mvp/core";
 import type { IProfileRepository } from "@mvp/storage";
-import type { ProfilePatchPayload } from "../types/profile.types.js";
+import type { ProfilePatchPayload } from "../types/profile.types";
 
 export class ProfileService {
   constructor(private readonly repository: IProfileRepository) {}

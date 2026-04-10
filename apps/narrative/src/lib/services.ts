@@ -1,10 +1,10 @@
-import { AnalyticsService } from "../services/analytics.service.js";
-import { ParserService } from "../services/parser.service.js";
-import { ProfileService } from "../services/profile.service.js";
-import { PublishService } from "../services/publish.service.js";
-import { TailoringService } from "../services/tailoring.service.js";
-import { AnalyticsRepository } from "../repositories/analytics.repository.js";
-import { ProfileRepository } from "../repositories/profile.repository.js";
+import { AnalyticsService } from "../services/analytics.service";
+import { ParserService } from "../services/parser.service";
+import { ProfileService } from "../services/profile.service";
+import { PublishService } from "../services/publish.service";
+import { TailoringService } from "../services/tailoring.service";
+import { AnalyticsRepository } from "../repositories/analytics.repository";
+import { ProfileRepository } from "../repositories/profile.repository";
 
 const profileRepository = new ProfileRepository();
 const analyticsRepository = new AnalyticsRepository();

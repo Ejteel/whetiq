@@ -1,11 +1,11 @@
 import { requireOwner } from "@whetiq/auth";
-import { analyticsDateRangeSchema } from "../../../../types/analytics.types.js";
-import { analyticsService } from "../../../../lib/services.js";
+import { analyticsDateRangeSchema } from "../../../../types/analytics.types";
+import { analyticsService } from "../../../../lib/services";
 import {
   createBadRequestResponse,
   createErrorResponse,
-} from "../../../../lib/route-responses.js";
-import { parseSlugParams } from "../../../../lib/route-params.js";
+} from "../../../../lib/route-responses";
+import { parseSlugParams } from "../../../../lib/route-params";
 
 /**
  * Returns analytics sessions for the authenticated owner across a date range.
