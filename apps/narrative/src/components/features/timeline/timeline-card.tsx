@@ -28,6 +28,7 @@ export function TimelineCard({
 }: TimelineCardProps): ReactElement | null {
   const [isExpanded, setIsExpanded] = useState(false);
   const [draftEntry, setDraftEntry] = useState(entry);
+  const [expandedAt, setExpandedAt] = useState<number | null>(null);
 
   useEffect((): void => {
     setDraftEntry(entry);
@@ -42,9 +43,41 @@ export function TimelineCard({
     await onSave(nextEntry);
   }
 
+  function toggleExpandedState(): void {
+    if (isExpanded) {
+      window.dispatchEvent(
+        new CustomEvent("card_collapse", {
+          detail: {
+            card_id: draftEntry.id,
+            time_expanded_ms: expandedAt ? Date.now() - expandedAt : 0,
+          },
+        }),
+      );
+      setExpandedAt(null);
+      setIsExpanded(false);
+      return;
+    }
+
+    const now = Date.now();
+    setExpandedAt(now);
+    window.dispatchEvent(
+      new CustomEvent("card_expand", {
+        detail: {
+          card_id: draftEntry.id,
+          role: draftEntry.role,
+          company: draftEntry.organization,
+          track: draftEntry.track,
+          timestamp: new Date(now).toISOString(),
+        },
+      }),
+    );
+    setIsExpanded(true);
+  }
+
   return (
     <article
       className={`timeline-card timeline-card-${side} ${isExpanded ? "timeline-card-expanded" : ""}`}
+      data-card-id={draftEntry.id}
       style={
         {
           "--timeline-track-color": tracksConfig[draftEntry.track].colorToken,
@@ -55,7 +88,7 @@ export function TimelineCard({
         className="timeline-card-toggle"
         type="button"
         aria-expanded={isExpanded}
-        onClick={() => setIsExpanded((current) => !current)}
+        onClick={toggleExpandedState}
       >
         <div className="timeline-card-header">
           <p className="timeline-card-company">{draftEntry.organization}</p>

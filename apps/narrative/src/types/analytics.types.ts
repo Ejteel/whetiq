@@ -33,4 +33,17 @@ export const analyticsSessionSchema = z.object({
   createdAt: z.date(),
 });
 
+export const analyticsSummarySchema = z.object({
+  totalSessions: z.number().int().nonnegative(),
+  byDeviceType: z.record(z.string(), z.number().int().nonnegative()),
+  byReferrer: z.array(
+    z.object({
+      label: z.string(),
+      sessions: z.number().int().nonnegative(),
+    }),
+  ),
+  latestVisitAt: z.string().nullable(),
+});
+
 export type AnalyticsBatchInput = z.infer<typeof analyticsBatchSchema>;
+export type AnalyticsSummary = z.infer<typeof analyticsSummarySchema>;

@@ -43,6 +43,7 @@ export function TimelineSpine({
     <section
       className="timeline-section"
       aria-label="Career timeline"
+      data-section-id="timeline"
       role="timeline"
     >
       <div className="timeline-marker-column">

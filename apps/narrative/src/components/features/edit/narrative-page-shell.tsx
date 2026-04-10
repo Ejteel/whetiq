@@ -4,6 +4,8 @@ import type { NarrativeProfile, TimelineEntry } from "@mvp/core";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { AnalyticsDashboard } from "../analytics/analytics-dashboard";
+import { NarrativeAnalytics } from "../analytics/narrative-analytics";
 import { EditBar } from "./edit-bar";
 import { ParserOverlay } from "../parser/parser-overlay";
 import { AISummaryPanel } from "../hero/ai-summary-panel";
@@ -147,6 +149,12 @@ export function NarrativePageShell({
 
   return (
     <main className="narrative-page">
+      {!editMode || isPreviewMode ? (
+        <NarrativeAnalytics
+          contextToken={initialContextToken}
+          profile={activeProfile}
+        />
+      ) : null}
       {editMode ? (
         <EditBar
           isPreviewMode={isPreviewMode}
@@ -168,7 +176,7 @@ export function NarrativePageShell({
           onApplyPatch={savePatch}
         />
       ) : null}
-      <section className="hero-section">
+      <section className="hero-section" data-section-id="hero">
         <HeroIdentity
           profile={activeProfile}
           editMode={editMode && !isPreviewMode}
@@ -203,6 +211,7 @@ export function NarrativePageShell({
         editMode={editMode && !isPreviewMode}
         onSaveEntry={updateTimelineEntry}
       />
+      <AnalyticsDashboard editMode={editMode && !isPreviewMode} slug={slug} />
     </main>
   );
 }
