@@ -2,6 +2,8 @@ import type {
   E2EAnalyticsEventRecord,
   E2EAnalyticsSessionRecord,
   E2EState,
+  AnalyticsEvent,
+  AnalyticsSession,
   NarrativeProfile,
 } from "@mvp/core";
 import { createDefaultE2EState } from "@mvp/core";
@@ -41,14 +43,18 @@ export function writeNarrativeE2EState(state: E2EState): void {
   writeFileSync(getStatePath(), JSON.stringify(state, null, 2), "utf8");
 }
 
-export function toAnalyticsSession(record: E2EAnalyticsSessionRecord) {
+export function toAnalyticsSession(
+  record: E2EAnalyticsSessionRecord,
+): AnalyticsSession {
   return {
     ...record,
     createdAt: new Date(record.createdAt),
   };
 }
 
-export function toAnalyticsEvent(record: E2EAnalyticsEventRecord) {
+export function toAnalyticsEvent(
+  record: E2EAnalyticsEventRecord,
+): AnalyticsEvent {
   return {
     ...record,
     occurredAt: new Date(record.occurredAt),

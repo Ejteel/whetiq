@@ -1,14 +1,4 @@
-import { requireOwner } from "@whetiq/auth";
-import { publishService } from "../../../../../lib/services";
-import { createErrorResponse } from "../../../../../lib/route-responses";
-import { parseSlugParams } from "../../../../../lib/route-params";
-
-export const publishProfileRouteDependencies = {
-  createErrorResponse,
-  parseSlugParams,
-  publishService,
-  requireOwner,
-};
+import { publishProfileRouteDependencies } from "../route.dependencies";
 
 /**
  * Publishes the current draft for the authenticated owner.

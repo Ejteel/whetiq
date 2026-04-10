@@ -1,11 +1,5 @@
-import { landingService } from "../../../lib/services";
 import { landingProfileSchema } from "../../../types/landing.types";
-import { createErrorResponse } from "../../../lib/route-responses";
-
-export const landingPublishedRouteDependencies = {
-  createErrorResponse,
-  landingService,
-};
+import { landingPublishedRouteDependencies } from "./route.dependencies";
 
 /**
  * Returns the published landing page data.

@@ -1,12 +1,4 @@
-import { requireOwner } from "@whetiq/auth";
-import { landingService } from "../../../../lib/services";
-import { createErrorResponse } from "../../../../lib/route-responses";
-
-export const landingPublishRouteDependencies = {
-  createErrorResponse,
-  landingService,
-  requireOwner,
-};
+import { landingPublishRouteDependencies } from "../route.dependencies";
 
 /**
  * Publishes the landing draft for the authenticated owner.

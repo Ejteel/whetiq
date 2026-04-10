@@ -1,15 +1,5 @@
-import { analyticsService } from "../../../lib/services";
 import { analyticsBatchSchema } from "../../../types/analytics.types";
-import {
-  createBadRequestResponse,
-  createErrorResponse,
-} from "../../../lib/route-responses";
-
-export const analyticsBatchRouteDependencies = {
-  analyticsService,
-  createBadRequestResponse,
-  createErrorResponse,
-};
+import { analyticsBatchRouteDependencies } from "./route.dependencies";
 
 /**
  * Ingests a public batch of analytics events for the narrative profile.

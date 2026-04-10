@@ -1,13 +1,5 @@
 import { profileSchema } from "../../../../types/profile.types";
-import { profileService } from "../../../../lib/services";
-import { createErrorResponse } from "../../../../lib/route-responses";
-import { parseSlugParams } from "../../../../lib/route-params";
-
-export const publishedProfileRouteDependencies = {
-  createErrorResponse,
-  parseSlugParams,
-  profileService,
-};
+import { publishedProfileRouteDependencies } from "./route.dependencies";
 
 /**
  * Returns the published profile for a public narrative URL.

@@ -1,35 +1,27 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { UnauthorizedError } from "@mvp/core";
+import { GET as getAnalyticsBySlug } from "../apps/narrative/src/app/api/analytics/[slug]/route";
+import { POST as postAnalyticsBatch } from "../apps/narrative/src/app/api/analytics/route";
 import {
-  GET as getAnalyticsBySlug,
-  analyticsProfileRouteDependencies,
-} from "../apps/narrative/src/app/api/analytics/[slug]/route";
-import {
-  POST as postAnalyticsBatch,
   analyticsBatchRouteDependencies,
-} from "../apps/narrative/src/app/api/analytics/route";
-import {
-  POST as postParser,
-  parserRouteDependencies,
-} from "../apps/narrative/src/app/api/parser/route";
+  analyticsProfileRouteDependencies,
+} from "../apps/narrative/src/app/api/analytics/route.dependencies";
+import { POST as postParser } from "../apps/narrative/src/app/api/parser/route";
+import { parserRouteDependencies } from "../apps/narrative/src/app/api/parser/route.dependencies";
 import {
   GET as getDraftProfile,
   PATCH as patchDraftProfile,
-  draftProfileRouteDependencies,
 } from "../apps/narrative/src/app/api/profile/[slug]/draft/route";
+import { POST as postPublishProfile } from "../apps/narrative/src/app/api/profile/[slug]/publish/route";
+import { GET as getPublishedProfile } from "../apps/narrative/src/app/api/profile/[slug]/route";
 import {
-  POST as postPublishProfile,
+  draftProfileRouteDependencies,
   publishProfileRouteDependencies,
-} from "../apps/narrative/src/app/api/profile/[slug]/publish/route";
-import {
-  GET as getPublishedProfile,
   publishedProfileRouteDependencies,
-} from "../apps/narrative/src/app/api/profile/[slug]/route";
-import {
-  POST as postTailoring,
-  tailoringRouteDependencies,
-} from "../apps/narrative/src/app/api/tailoring/route";
+} from "../apps/narrative/src/app/api/profile/[slug]/route.dependencies";
+import { POST as postTailoring } from "../apps/narrative/src/app/api/tailoring/route";
+import { tailoringRouteDependencies } from "../apps/narrative/src/app/api/tailoring/route.dependencies";
 import {
   analyticsBatchFixture,
   cloneFixture,

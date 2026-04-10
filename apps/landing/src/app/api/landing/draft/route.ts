@@ -1,20 +1,8 @@
-import { requireOwner } from "@whetiq/auth";
-import { landingService } from "../../../../lib/services";
 import {
   landingProfilePatchSchema,
   landingProfileSchema,
 } from "../../../../types/landing.types";
-import {
-  createBadRequestResponse,
-  createErrorResponse,
-} from "../../../../lib/route-responses";
-
-export const landingDraftRouteDependencies = {
-  createBadRequestResponse,
-  createErrorResponse,
-  landingService,
-  requireOwner,
-};
+import { landingDraftRouteDependencies } from "../route.dependencies";
 
 /**
  * Returns the authenticated owner's landing draft.

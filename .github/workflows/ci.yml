@@ -35,3 +35,47 @@ jobs:
 
       - name: Test
         run: npm test
+
+  build-narrative:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run -w @whetiq/narrative build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_CI }}
+          DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED_CI }}
+          AUTH_SECRET: test-secret-for-ci
+          WHETIQ_OWNER_EMAIL: ci@test.com
+          NEXTAUTH_URL: http://localhost:3002
+
+  build-landing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run -w @whetiq/landing build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_CI }}
+          DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED_CI }}
+          AUTH_SECRET: test-secret-for-ci
+          WHETIQ_OWNER_EMAIL: ci@test.com
+          NEXTAUTH_URL: http://localhost:3000

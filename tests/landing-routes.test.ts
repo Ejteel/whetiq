@@ -3,16 +3,14 @@ import test from "node:test";
 import {
   GET as getLandingDraft,
   PATCH as patchLandingDraft,
-  landingDraftRouteDependencies,
 } from "../apps/landing/src/app/api/landing/draft/route";
+import { POST as postLandingPublish } from "../apps/landing/src/app/api/landing/publish/route";
+import { GET as getLandingPublished } from "../apps/landing/src/app/api/landing/route";
 import {
-  POST as postLandingPublish,
+  landingDraftRouteDependencies,
   landingPublishRouteDependencies,
-} from "../apps/landing/src/app/api/landing/publish/route";
-import {
-  GET as getLandingPublished,
   landingPublishedRouteDependencies,
-} from "../apps/landing/src/app/api/landing/route";
+} from "../apps/landing/src/app/api/landing/route.dependencies";
 import { cloneFixture, landingProfileFixture } from "./test-fixtures";
 
 function restoreDependencies<TDependencies extends Record<string, unknown>>(

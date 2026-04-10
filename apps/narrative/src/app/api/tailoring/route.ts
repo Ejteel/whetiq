@@ -1,18 +1,8 @@
-import { tailoringService } from "../../../lib/services";
 import {
   tailoringRequestSchema,
   tailoringResponseSchema,
 } from "../../../types/tailoring.types";
-import {
-  createBadRequestResponse,
-  createErrorResponse,
-} from "../../../lib/route-responses";
-
-export const tailoringRouteDependencies = {
-  createBadRequestResponse,
-  createErrorResponse,
-  tailoringService,
-};
+import { tailoringRouteDependencies } from "./route.dependencies";
 
 /**
  * Returns a context-tailored summary for a profile snapshot.

@@ -1,20 +1,8 @@
-import { requireOwner } from "@whetiq/auth";
-import { parserService } from "../../../lib/services";
 import {
   parserRequestSchema,
   parserResultSchema,
 } from "../../../types/tailoring.types";
-import {
-  createBadRequestResponse,
-  createErrorResponse,
-} from "../../../lib/route-responses";
-
-export const parserRouteDependencies = {
-  createBadRequestResponse,
-  createErrorResponse,
-  parserService,
-  requireOwner,
-};
+import { parserRouteDependencies } from "./route.dependencies";
 
 /**
  * Parses an uploaded or pasted career document into structured profile data.

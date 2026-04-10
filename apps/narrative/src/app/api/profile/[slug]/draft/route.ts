@@ -1,22 +1,8 @@
-import { requireOwner } from "@whetiq/auth";
 import {
   profilePatchSchema,
   profileSchema,
 } from "../../../../../types/profile.types";
-import { profileService } from "../../../../../lib/services";
-import {
-  createBadRequestResponse,
-  createErrorResponse,
-} from "../../../../../lib/route-responses";
-import { parseSlugParams } from "../../../../../lib/route-params";
-
-export const draftProfileRouteDependencies = {
-  createBadRequestResponse,
-  createErrorResponse,
-  parseSlugParams,
-  profileService,
-  requireOwner,
-};
+import { draftProfileRouteDependencies } from "../route.dependencies";
 
 /**
  * Returns the current draft for the authenticated owner.

@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/narrative/:path*",
+      "destination": "https://whetiq-narrative.vercel.app/narrative/:path*"
+    },
+    {
+      "source": "/workspace/:path*",
+      "destination": "https://whetiq-web.vercel.app/workspace/:path*"
+    }
+  ]
+}

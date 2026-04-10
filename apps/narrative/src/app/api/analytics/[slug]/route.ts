@@ -1,19 +1,5 @@
-import { requireOwner } from "@whetiq/auth";
 import { analyticsDateRangeSchema } from "../../../../types/analytics.types";
-import { analyticsService } from "../../../../lib/services";
-import {
-  createBadRequestResponse,
-  createErrorResponse,
-} from "../../../../lib/route-responses";
-import { parseSlugParams } from "../../../../lib/route-params";
-
-export const analyticsProfileRouteDependencies = {
-  analyticsService,
-  createBadRequestResponse,
-  createErrorResponse,
-  parseSlugParams,
-  requireOwner,
-};
+import { analyticsProfileRouteDependencies } from "../route.dependencies";
 
 /**
  * Returns analytics sessions for the authenticated owner across a date range.
