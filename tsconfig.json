@@ -5,6 +5,7 @@
     { "path": "./packages/adapters" },
     { "path": "./packages/storage" },
     { "path": "./packages/api" },
-    { "path": "./packages/auth" }
+    { "path": "./packages/auth" },
+    { "path": "./apps/narrative" }
   ]
 }
