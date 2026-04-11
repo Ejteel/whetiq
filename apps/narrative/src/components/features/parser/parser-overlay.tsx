@@ -294,8 +294,25 @@ export function ParserOverlay({
       role="dialog"
       aria-modal="true"
       aria-label="Resume parser"
+      tabIndex={-1}
+      onKeyDown={(event): void => {
+        if (event.key === "Escape") {
+          onClose();
+        }
+      }}
     >
       <div className="parser-overlay-shell">
+        <div className="parser-overlay-header">
+          <p className="parser-section-label">Resume import</p>
+          <button
+            className="icon-button"
+            type="button"
+            aria-label="Close parser"
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
         {phase === "upload" ? (
           <div className="parser-upload">
             <div className="parser-upload-zone">
