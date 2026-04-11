@@ -1,7 +1,8 @@
+import { createDefaultE2EState, ResourceNotFoundError } from "@mvp/core";
 import type { NarrativeProfile } from "@mvp/core";
-import { ResourceNotFoundError } from "@mvp/core";
 import { and, desc, eq } from "drizzle-orm";
 import type { IProfileRepository } from "@mvp/storage";
+import { DEFAULT_PROFILE_SLUG } from "../config/app.config";
 import { getDb } from "../lib/db";
 import { profilesTable, profileVersionsTable } from "../lib/schema";
 
@@ -100,10 +101,63 @@ export class ProfileRepository implements IProfileRepository {
       .limit(1);
 
     if (rows.length === 0) {
+      await this.#seedDefaultProfile(slug);
+      const seededRows = await this.database()
+        .select({ profileId: profilesTable.id })
+        .from(profilesTable)
+        .where(eq(profilesTable.slug, slug))
+        .orderBy(desc(profilesTable.createdAt))
+        .limit(1);
+
+      if (seededRows.length > 0) {
+        return this.#getVersion(seededRows[0].profileId, version);
+      }
+
       throw new ResourceNotFoundError("Profile", slug);
     }
 
     const row = rows[0];
     return this.#getVersion(row.profileId, version);
+  }
+
+  async #seedDefaultProfile(slug: string): Promise<void> {
+    if (slug !== DEFAULT_PROFILE_SLUG) {
+      return;
+    }
+
+    const defaultProfile = createDefaultE2EState().narrative.published;
+    const ownerId = process.env.WHETIQ_OWNER_EMAIL ?? "owner@whetiq.local";
+
+    await this.database()
+      .insert(profilesTable)
+      .values({
+        id: defaultProfile.id,
+        slug: defaultProfile.slug,
+        ownerId,
+        createdAt: new Date(),
+      })
+      .onConflictDoNothing();
+
+    await this.database()
+      .insert(profileVersionsTable)
+      .values([
+        {
+          id: crypto.randomUUID(),
+          profileId: defaultProfile.id,
+          version: "draft",
+          data: createDefaultE2EState().narrative.draft,
+          publishedAt: null,
+          updatedAt: new Date(),
+        },
+        {
+          id: crypto.randomUUID(),
+          profileId: defaultProfile.id,
+          version: "published",
+          data: defaultProfile,
+          publishedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ])
+      .onConflictDoNothing();
   }
 }
