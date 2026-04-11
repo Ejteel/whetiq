@@ -81,17 +81,17 @@ button {
 
 .landing-edit-bar {
   position: sticky;
-  top: 1rem;
-  z-index: 50;
+  top: 0;
+  z-index: 101;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 2rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--hub-border);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
+  min-height: 40px;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--hub-border);
+  background: rgba(248, 247, 244, 0.96);
   backdrop-filter: blur(12px);
 }
 
@@ -167,6 +167,12 @@ button {
 .landing-inline-textarea {
   min-height: 6rem;
   resize: vertical;
+}
+
+.landing-inline-input:hover,
+.landing-inline-textarea:hover,
+.landing-inline-select:hover {
+  background: rgba(26, 140, 126, 0.06);
 }
 
 .landing-identity {
@@ -245,6 +251,10 @@ button {
   justify-self: end;
 }
 
+.landing-field-counter-warning {
+  color: #8a1f32;
+}
+
 .landing-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -273,6 +283,10 @@ button {
   transform: translateY(-3px);
   box-shadow: var(--hub-shadow-hover);
   border-color: var(--hub-border-hover);
+}
+
+.landing-card-link:hover .landing-card-arrow {
+  color: var(--hub-accent);
 }
 
 .landing-card-link:active .landing-card {
@@ -334,6 +348,7 @@ button {
   margin-top: auto;
   color: var(--hub-text-muted);
   font-size: 1.1rem;
+  transition: color 150ms ease;
 }
 
 .landing-card-edit {

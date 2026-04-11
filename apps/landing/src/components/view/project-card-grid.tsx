@@ -4,7 +4,15 @@ import type { ReactElement } from "react";
 function formatStatus(
   status: LandingProfile["cards"][number]["status"],
 ): string {
-  return status.replace("_", " ");
+  if (status === "live") {
+    return "Live";
+  }
+
+  if (status === "in_development") {
+    return "In Development";
+  }
+
+  return "Coming Soon";
 }
 
 export function ProjectCardGrid({

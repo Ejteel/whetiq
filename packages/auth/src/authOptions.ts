@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions, Session } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -15,6 +15,19 @@ function resolveProviderFactory<TFactory extends (...args: never[]) => unknown>(
 const githubProviderFactory = resolveProviderFactory(GithubProvider);
 const googleProviderFactory = resolveProviderFactory(GoogleProvider);
 
+function normalizeSessionUser(
+  user: Session["user"] | undefined,
+  email: string,
+): NonNullable<Session["user"]> {
+  return (
+    user ?? {
+      email,
+      image: null,
+      name: null,
+    }
+  );
+}
+
 export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   providers: [
@@ -30,7 +43,13 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     session({ session, token }) {
       if (token.email) {
-        session.user.email = token.email;
+        const currentUser = normalizeSessionUser(session.user, token.email);
+
+        session.user = {
+          email: token.email,
+          image: currentUser.image,
+          name: currentUser.name,
+        };
       }
       return session;
     },

@@ -14,15 +14,15 @@ function getStatusLabel(
   saveState: EditBarProps["saveState"],
 ): string {
   if (saveState === "saving") {
-    return "SAVING...";
+    return "Saving...";
   }
 
   if (saveState === "saved") {
-    return "SAVED";
+    return "Saved";
   }
 
   if (saveState === "published") {
-    return "PUBLISHED";
+    return "✓ Published";
   }
 
   if (hasUnpublishedChanges) {

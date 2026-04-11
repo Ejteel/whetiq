@@ -3,6 +3,7 @@
 import type { ProjectCard } from "@mvp/core";
 import type { DragEvent, ReactElement } from "react";
 import { useState } from "react";
+import { EditableProjectToolbar } from "./editable-project-toolbar";
 
 interface EditableProjectCardProps {
   card: ProjectCard;
@@ -36,43 +37,15 @@ export function EditableProjectCard({
       onDragStart={() => onDragStart(card.id)}
       onDrop={(event) => void handleDrop(event)}
     >
-      <div className="landing-card-edit-toolbar">
-        <div className="landing-edit-actions">
-          <span className="landing-card-handle" aria-hidden="true">
-            ⠿
-          </span>
-          <button
-            className="landing-icon-button"
-            type="button"
-            onClick={() => void onMove(card.id, -1)}
-          >
-            ↑
-          </button>
-          <button
-            className="landing-icon-button"
-            type="button"
-            onClick={() => void onMove(card.id, 1)}
-          >
-            ↓
-          </button>
-        </div>
-        <div className="landing-edit-actions">
-          <button
-            className="landing-icon-button"
-            type="button"
-            onClick={() => void onSave({ ...card, isVisible: !card.isVisible })}
-          >
-            {card.isVisible ? "◐" : "◌"}
-          </button>
-          <button
-            className="landing-icon-button"
-            type="button"
-            onClick={() => setIsConfirmingDelete(true)}
-          >
-            Delete
-          </button>
-        </div>
-      </div>
+      <EditableProjectToolbar
+        isVisible={card.isVisible}
+        onDelete={() => setIsConfirmingDelete(true)}
+        onMoveDown={() => void onMove(card.id, 1)}
+        onMoveUp={() => void onMove(card.id, -1)}
+        onToggleVisibility={() =>
+          void onSave({ ...card, isVisible: !card.isVisible })
+        }
+      />
       {isConfirmingDelete ? (
         <div className="landing-delete-confirmation">
           <p>Delete this card? This cannot be undone.</p>
