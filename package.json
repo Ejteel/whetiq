@@ -1,8 +1,8 @@
 {
-  "name": "canonical-chat-workspace",
+  "name": "whetiq",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9.0.0",
+  "type": "module",
   "scripts": {
     "setup": "npm install && npm run doctor",
     "doctor": "node scripts/doctor.mjs",
@@ -14,23 +14,36 @@
     "build:admin": "npm run -w @mvp/admin build",
     "build": "tsc -b",
     "typecheck": "tsc -b --pretty false",
-    "test": "node --test tests/*.test.mjs",
-    "test:e2e": "npx playwright test",
-    "test:e2e:local": "WEB_BASE_URL=http://127.0.0.1:3001 ADMIN_BASE_URL=http://127.0.0.1:3010 npx playwright test",
-    "test:e2e:headed": "npx playwright test --headed",
-    "lint": "echo 'lint not yet configured'"
+    "test": "npm run test:node && npm run test:e2e",
+    "test:e2e": "playwright test",
+    "test:node": "NODE_OPTIONS=--max-old-space-size=4096 node --import tsx --test --test-concurrency=1 tests/*.test.ts tests/*.test.mjs",
+    "lint": "eslint . --ext .ts,.tsx",
+    "prepare": "husky"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
+  "lint-staged": {
+    "**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
+    "@eslint/js": "^9.25.1",
+    "@playwright/test": "^1.59.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "concurrently": "^9.0.1",
+    "eslint": "^9.25.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.6.3",
+    "typescript-eslint": "^8.30.1",
     "wait-on": "^8.0.1"
   }
 }

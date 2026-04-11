@@ -1,13 +1,13 @@
-# Aggreate AI Prompt Enhancer
+# WhetIQ
 
-[![CI](https://github.com/Ejteel/aggreate-ai-prompt-enhancer/actions/workflows/ci.yml/badge.svg)](https://github.com/Ejteel/aggreate-ai-prompt-enhancer/actions/workflows/ci.yml)
+[![CI](https://github.com/Ejteel/whetiq/actions/workflows/ci.yml/badge.svg)](https://github.com/Ejteel/whetiq/actions/workflows/ci.yml)
 
 Local-first desktop + web workspace for multi-provider AI conversations with prompt enhancement, canonical thread state, and provider/model switching.
 
 ## Quick Start (5 minutes)
 ```bash
-git clone https://github.com/Ejteel/aggreate-ai-prompt-enhancer.git
-cd aggreate-ai-prompt-enhancer
+git clone https://github.com/Ejteel/whetiq.git
+cd whetiq
 npm run setup
 cp .env.example .env.local
 npm run -w @mvp/web dev

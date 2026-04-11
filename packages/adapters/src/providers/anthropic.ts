@@ -1,13 +1,14 @@
-import type {
-  CanonicalProviderError,
-  CanonicalPromptSpec,
-  CanonicalStreamEvent,
-  ContextWindow,
-  ModelConfig,
-  ProviderRequest,
-  TokenEstimate
+import {
+  DEFAULT_MAX_OUTPUT_TOKENS,
+  estimateCharacterTokens,
+  type CanonicalProviderError,
+  type CanonicalPromptSpec,
+  type CanonicalStreamEvent,
+  type ContextWindow,
+  type ModelConfig,
+  type ProviderRequest,
+  type TokenEstimate
 } from "@mvp/core";
-import { estimateCharacterTokens } from "@mvp/core";
 import { iterateSSE, safeParseJson } from "../sse.js";
 import type { ProviderAdapter } from "../types.js";
 
@@ -114,7 +115,7 @@ export const anthropicAdapter: ProviderAdapter = {
     const payloadText = JSON.stringify(request.payload);
     return {
       promptTokens: estimateCharacterTokens(payloadText),
-      maxOutputTokens: 4096
+      maxOutputTokens: DEFAULT_MAX_OUTPUT_TOKENS
     };
   }
 };

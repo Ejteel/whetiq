@@ -1,0 +1,13 @@
+{
+  "name": "@whetiq/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@mvp/core": "file:../core",
+    "next-auth": "^4.24.13"
+  }
+}

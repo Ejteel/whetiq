@@ -18,8 +18,8 @@ function buildProviders(): NonNullable<NextAuthOptions["providers"]> {
     providers.push(
       GitHubProvider({
         clientId: process.env.AUTH_GITHUB_ID as string,
-        clientSecret: process.env.AUTH_GITHUB_SECRET as string
-      })
+        clientSecret: process.env.AUTH_GITHUB_SECRET as string,
+      }),
     );
   }
 
@@ -27,8 +27,8 @@ function buildProviders(): NonNullable<NextAuthOptions["providers"]> {
     providers.push(
       GoogleProvider({
         clientId: process.env.AUTH_GOOGLE_ID as string,
-        clientSecret: process.env.AUTH_GOOGLE_SECRET as string
-      })
+        clientSecret: process.env.AUTH_GOOGLE_SECRET as string,
+      }),
     );
   }
 
@@ -36,7 +36,10 @@ function buildProviders(): NonNullable<NextAuthOptions["providers"]> {
 }
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.ADMIN_AUTH_SECRET ?? process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+  secret:
+    process.env.ADMIN_AUTH_SECRET ??
+    process.env.AUTH_SECRET ??
+    process.env.NEXTAUTH_SECRET,
   providers: buildProviders(),
   session: { strategy: "jwt" },
   callbacks: {
@@ -49,7 +52,7 @@ export const authOptions: NextAuthOptions = {
       return Boolean(role) || "/access-denied";
     },
     async jwt({ token, user }) {
-      const email = normalizeEmail(user?.email ?? token.email);
+      const email = normalizeEmail(user.email ?? token.email);
       token.email = email;
       token.role = email ? await getRoleByEmail(email) : null;
       return token;
@@ -57,13 +60,14 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.email = normalizeEmail(token.email as string);
-        (session.user as { role?: string }).role = typeof token.role === "string" ? token.role : undefined;
+        (session.user as { role?: string }).role =
+          typeof token.role === "string" ? token.role : undefined;
       }
       return session;
-    }
+    },
   },
   pages: {
     signIn: "/",
-    error: "/access-denied"
-  }
+    error: "/access-denied",
+  },
 };

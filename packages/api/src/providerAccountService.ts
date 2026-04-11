@@ -1,4 +1,4 @@
-import type { Provider } from "@mvp/core";
+import { nowIso, type Provider } from "@mvp/core";
 import type { ProviderAccount, Repository } from "@mvp/storage";
 import type { KeychainClient } from "./keychain.js";
 
@@ -13,7 +13,7 @@ export class ProviderAccountService {
     const keychainRef = `provider:${provider}:${id}`;
     await this.keychain.setSecret(keychainRef, apiKey);
 
-    const now = new Date().toISOString();
+    const now = nowIso();
     const account: ProviderAccount = {
       id,
       provider,

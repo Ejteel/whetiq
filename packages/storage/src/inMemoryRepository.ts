@@ -1,9 +1,5 @@
-import type { EnhancerPack, Message, Project, Thread } from "@mvp/core";
+import { nowIso, type EnhancerPack, type Message, type Project, type Thread } from "@mvp/core";
 import type { Attachment, ProviderAccount, Repository, RunRecord } from "./repository.js";
-
-function nowIso(): string {
-  return new Date().toISOString();
-}
 
 export class InMemoryRepository implements Repository {
   private readonly projects = new Map<string, Project>();

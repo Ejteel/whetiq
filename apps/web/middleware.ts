@@ -3,19 +3,31 @@ import { getToken } from "next-auth/jwt";
 
 type AuthMode = "none" | "basic" | "oauth" | "hybrid";
 
-function getAuthMode(): AuthMode {
-  const mode = process.env.PRIVATE_AUTH_MODE;
-  if (mode === "basic" || mode === "oauth" || mode === "hybrid" || mode === "none") {
+function getExplicitMode(): AuthMode | undefined {
+  const mode = process.env.PREVIEW_AUTH_MODE;
+  if (mode === "basic" || mode === "oauth" || mode === "none") {
     return mode;
   }
+  return undefined;
+}
 
-  const hosted = process.env.VERCEL_ENV === "preview" || process.env.VERCEL_ENV === "production";
-  if (!hosted) {
+function isHostedEnvironment(): boolean {
+  return process.env.VERCEL_ENV === "preview" || process.env.VERCEL_ENV === "production";
+}
+
+function isPublicDemo(): boolean {
+  return process.env.DEMO_MODE === "true" && process.env.PUBLIC_DEMO === "true";
+}
+
+function getAuthMode(): AuthMode {
+  const explicitMode = getExplicitMode();
+  if (explicitMode) {
+    return explicitMode;
+  }
+  if (!isHostedEnvironment()) {
     return "none";
   }
-
-  const isPublicDemo = process.env.DEMO_MODE === "true" && process.env.PUBLIC_DEMO === "true";
-  return isPublicDemo ? "none" : "oauth";
+  return isPublicDemo() ? "none" : "oauth";
 }
 
 function unauthorizedResponse(): NextResponse {
@@ -34,35 +46,67 @@ function applyNoIndex(response: NextResponse): NextResponse {
   return response;
 }
 
-function isAuthorized(request: NextRequest): boolean {
-  const username = process.env.PRIVATE_AUTH_USERNAME;
-  const password = process.env.PRIVATE_AUTH_PASSWORD;
-
-  if (!username || !password) {
-    return false;
-  }
-
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader?.startsWith("Basic ")) {
-    return false;
-  }
-
-  const encoded = authHeader.slice("Basic ".length).trim();
-
+function decodeBasicCredentials(encoded: string): { username: string; password: string } | null {
   try {
     const decoded = atob(encoded);
     const separator = decoded.indexOf(":");
     if (separator === -1) {
-      return false;
+      return null;
     }
+    return { username: decoded.slice(0, separator), password: decoded.slice(separator + 1) };
+  } catch (error) {
+    console.warn("[auth] Failed to decode Basic Auth header:", error);
+    return null;
+  }
+}
 
-    const inputUser = decoded.slice(0, separator);
-    const inputPassword = decoded.slice(separator + 1);
-
-    return inputUser === username && inputPassword === password;
-  } catch {
+function isAuthorized(request: NextRequest): boolean {
+  const username = process.env.PREVIEW_AUTH_USERNAME;
+  const password = process.env.PREVIEW_AUTH_PASSWORD;
+  if (!username || !password) {
     return false;
   }
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader?.startsWith("Basic ")) {
+    return false;
+  }
+  const credentials = decodeBasicCredentials(authHeader.slice("Basic ".length).trim());
+  if (!credentials) {
+    return false;
+  }
+  return credentials.username === username && credentials.password === password;
+}
+
+function isPublicPath(path: string): boolean {
+  return (
+    path === "/" ||
+    path === "/workspace" ||
+    path === "/narrative" ||
+    path === "/login" ||
+    path === "/api/chat/demo" ||
+    path.startsWith("/api/auth/") ||
+    path.startsWith("/_next/") ||
+    path === "/favicon.ico"
+  );
+}
+
+function buildLoginRedirect(request: NextRequest, path: string): NextResponse {
+  const loginUrl = new URL("/login", request.url);
+  loginUrl.searchParams.set("callbackUrl", path || "/");
+  return NextResponse.redirect(loginUrl);
+}
+
+function handleBasicAuth(request: NextRequest): NextResponse {
+  return isAuthorized(request) ? applyNoIndex(NextResponse.next()) : applyNoIndex(unauthorizedResponse());
+}
+
+async function handleOAuth(request: NextRequest): Promise<NextResponse> {
+  const path = request.nextUrl.pathname;
+  if (isPublicPath(path)) {
+    return applyNoIndex(NextResponse.next());
+  }
+  const token = await getToken({ req: request, secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET });
+  return token ? applyNoIndex(NextResponse.next()) : applyNoIndex(buildLoginRedirect(request, path));
 }
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
@@ -70,49 +114,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   if (mode === "none") {
     return applyNoIndex(NextResponse.next());
   }
-
-  if (mode === "basic" || mode === "hybrid") {
-    if (isAuthorized(request)) {
-      if (mode === "basic") {
-        return applyNoIndex(NextResponse.next());
-      }
-    } else {
-      return applyNoIndex(unauthorizedResponse());
-    }
+  if (mode === "basic") {
+    return handleBasicAuth(request);
   }
-
-  const path = request.nextUrl.pathname;
-  const isPublic =
-    path === "/" ||
-    path === "/workspace" ||
-    path === "/login" ||
-    path.startsWith("/api/auth/") ||
-    path === "/api/chat/demo" ||
-    path.startsWith("/_next/") ||
-    path === "/favicon.ico";
-
-  if (isPublic) {
-    return applyNoIndex(NextResponse.next());
-  }
-
-  try {
-    const token = await getToken({
-      req: request,
-      secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET
-    });
-    if (token) {
-      return applyNoIndex(NextResponse.next());
-    }
-  } catch {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", path || "/");
-    loginUrl.searchParams.set("error", "config");
-    return applyNoIndex(NextResponse.redirect(loginUrl));
-  }
-
-  const loginUrl = new URL("/login", request.url);
-  loginUrl.searchParams.set("callbackUrl", path || "/");
-  return applyNoIndex(NextResponse.redirect(loginUrl));
+  return handleOAuth(request);
 }
 
 export const config = {

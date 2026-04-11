@@ -1,0 +1,29 @@
+{
+  "name": "@whetiq/narrative",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@mvp/adapters": "file:../../packages/adapters",
+    "@mvp/api": "file:../../packages/api",
+    "@mvp/core": "file:../../packages/core",
+    "@mvp/storage": "file:../../packages/storage",
+    "@neondatabase/serverless": "^0.10.4",
+    "@whetiq/auth": "file:../../packages/auth",
+    "drizzle-orm": "^0.38.4",
+    "next": "^15.5.12",
+    "next-auth": "^4.24.13",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.30.1"
+  }
+}
