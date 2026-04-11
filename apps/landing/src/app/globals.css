@@ -314,12 +314,9 @@ button {
   margin: 0;
   color: var(--hub-text-secondary);
   font-size: 0.875rem;
-  line-height: 1.6;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
+  white-space: nowrap;
 }
 
 .landing-status-badge {
@@ -501,12 +498,21 @@ button {
     font-size: 2.5rem;
   }
 
-  .landing-edit-bar,
   .landing-card-header,
   .landing-card-footer,
   .landing-card-edit-toolbar {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .landing-edit-bar {
+    padding: 0.4rem 0.75rem;
+  }
+
+  .landing-button-primary,
+  .landing-button-ghost {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
   }
 
   .landing-cards {

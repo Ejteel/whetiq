@@ -1,6 +1,6 @@
 "use client";
 
-import type { NarrativeProfile } from "@mvp/core";
+import type { NarrativeProfile, TimelineEntry } from "@mvp/core";
 import type { ReactElement } from "react";
 import { TimelineCard } from "./timeline-card";
 import { YearMarker } from "./year-marker";
@@ -9,6 +9,7 @@ interface TimelineSpineProps {
   profile: NarrativeProfile;
   editMode: boolean;
   onSaveEntry: (entry: NarrativeProfile["timeline"][number]) => Promise<void>;
+  onAddEntry: () => Promise<void>;
 }
 
 function getEntrySide(
@@ -21,10 +22,13 @@ function getEntrySide(
   return "left";
 }
 
-function getVisibleYears(profile: NarrativeProfile): number[] {
+function getDisplayYears(
+  profile: NarrativeProfile,
+  editMode: boolean,
+): number[] {
   const years = new Set<number>();
   for (const entry of profile.timeline) {
-    if (entry.isVisible) {
+    if (editMode || entry.isVisible) {
       years.add(entry.startDate.year);
     }
   }
@@ -32,38 +36,84 @@ function getVisibleYears(profile: NarrativeProfile): number[] {
   return [...years].sort((left, right) => right - left);
 }
 
+function EmptyTimelineState({
+  onAddEntry,
+}: {
+  onAddEntry: () => Promise<void>;
+}): ReactElement {
+  return (
+    <div className="timeline-empty-state">
+      <p className="timeline-empty-title">No timeline entries yet</p>
+      <p className="timeline-empty-copy">
+        Import your resume to populate the timeline automatically, or add
+        entries manually one at a time.
+      </p>
+      <button
+        className="ghost-button"
+        type="button"
+        onClick={() => void onAddEntry()}
+      >
+        + Add first entry
+      </button>
+    </div>
+  );
+}
+
 export function TimelineSpine({
   profile,
   editMode,
   onSaveEntry,
+  onAddEntry,
 }: TimelineSpineProps): ReactElement {
-  const years = getVisibleYears(profile);
+  const years = getDisplayYears(profile, editMode);
+  const isEmpty = profile.timeline.length === 0;
 
   return (
     <section
       className="timeline-section"
       aria-label="Career timeline"
       data-section-id="timeline"
-      role="timeline"
+      role="region"
     >
-      <div className="timeline-marker-column">
-        {years.map((year) => (
-          <div key={year} className="timeline-year-anchor" id={`year-${year}`}>
-            <YearMarker year={year} />
+      {isEmpty && editMode ? (
+        <EmptyTimelineState onAddEntry={onAddEntry} />
+      ) : (
+        <>
+          <div className="timeline-marker-column">
+            {years.map((year) => (
+              <div
+                key={year}
+                className="timeline-year-anchor"
+                id={`year-${year}`}
+              >
+                <YearMarker year={year} />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <div className="timeline-list">
-        {profile.timeline.map((entry) => (
-          <TimelineCard
-            key={entry.id}
-            entry={entry}
-            side={getEntrySide(entry.track)}
-            editMode={editMode}
-            onSave={onSaveEntry}
-          />
-        ))}
-      </div>
+          <div className="timeline-list">
+            {profile.timeline.map((entry: TimelineEntry) => (
+              <TimelineCard
+                key={entry.id}
+                entry={entry}
+                side={getEntrySide(entry.track)}
+                editMode={editMode}
+                onSave={onSaveEntry}
+              />
+            ))}
+            {editMode ? (
+              <div className="timeline-add-entry">
+                <button
+                  className="ghost-button"
+                  type="button"
+                  onClick={() => void onAddEntry()}
+                >
+                  + Add timeline entry
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </>
+      )}
     </section>
   );
 }
