@@ -188,13 +188,8 @@ export function NarrativePageShell({
           profile={activeProfile}
           editMode={editMode && !isPreviewMode}
           onSaveName={(name) => savePatch({ name })}
-          onSaveIdentityStatement={(content) =>
-            savePatch({
-              identityStatements: activeProfile.identityStatements.map(
-                (statement) =>
-                  statement.isActive ? { ...statement, content } : statement,
-              ),
-            })
+          onSaveIdentityStatements={(identityStatements) =>
+            savePatch({ identityStatements })
           }
           onSaveLocation={(location) => savePatch({ location })}
           onSaveAvailability={(availability) => savePatch({ availability })}
@@ -208,6 +203,14 @@ export function NarrativePageShell({
               summary: {
                 ...activeProfile.summary,
                 fallback,
+              },
+            })
+          }
+          onSaveContextSummaries={(contextSummaries) =>
+            savePatch({
+              summary: {
+                ...activeProfile.summary,
+                contextSummaries,
               },
             })
           }

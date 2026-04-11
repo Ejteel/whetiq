@@ -1,15 +1,16 @@
 "use client";
 
-import type { NarrativeProfile } from "@mvp/core";
+import type { IdentityStatement, NarrativeProfile } from "@mvp/core";
 import type { ReactElement } from "react";
 import { useState } from "react";
+import { IdentityStatementsEditor } from "../edit/identity-statements-editor";
 import { ScrollCue } from "./scroll-cue";
 
 interface HeroIdentityProps {
   profile: NarrativeProfile;
   editMode: boolean;
   onSaveName: (value: string) => Promise<void>;
-  onSaveIdentityStatement: (value: string) => Promise<void>;
+  onSaveIdentityStatements: (value: IdentityStatement[]) => Promise<void>;
   onSaveLocation: (value: string) => Promise<void>;
   onSaveAvailability: (value: string) => Promise<void>;
 }
@@ -77,7 +78,7 @@ export function HeroIdentity({
   profile,
   editMode,
   onSaveName,
-  onSaveIdentityStatement,
+  onSaveIdentityStatements,
   onSaveLocation,
   onSaveAvailability,
 }: HeroIdentityProps): ReactElement {
@@ -99,13 +100,29 @@ export function HeroIdentity({
           <h1 className="hero-name">{profile.name}</h1>
         )}
         {activeStatement ? (
-          <EditableText
-            value={activeStatement.content}
-            className="hero-identity-statement"
-            editMode={editMode}
-            multiline
-            onSave={onSaveIdentityStatement}
-          />
+          <>
+            <EditableText
+              value={activeStatement.content}
+              className="hero-identity-statement"
+              editMode={editMode}
+              multiline
+              onSave={async (nextValue): Promise<void> => {
+                await onSaveIdentityStatements(
+                  profile.identityStatements.map((statement) =>
+                    statement.isActive
+                      ? { ...statement, content: nextValue }
+                      : statement,
+                  ),
+                );
+              }}
+            />
+            {editMode ? (
+              <IdentityStatementsEditor
+                statements={profile.identityStatements}
+                onSave={onSaveIdentityStatements}
+              />
+            ) : null}
+          </>
         ) : null}
         <p className="hero-meta">
           <EditableText

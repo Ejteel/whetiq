@@ -1,8 +1,9 @@
 "use client";
 
-import type { NarrativeProfile } from "@mvp/core";
+import type { ContextSummary, NarrativeProfile } from "@mvp/core";
 import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
+import { ContextSummariesEditor } from "../edit/context-summaries-editor";
 import { toNarrativePath } from "../../../config/app.config";
 import { detectContextLabel } from "../../../lib/context-detector";
 import { decodeContextToken } from "../../../lib/token-decoder";
@@ -12,6 +13,7 @@ interface AISummaryPanelProps {
   initialContextToken: string | null;
   editMode: boolean;
   onSaveFallbackSummary: (value: string) => Promise<void>;
+  onSaveContextSummaries: (value: ContextSummary[]) => Promise<void>;
 }
 
 interface TailoringResponse {
@@ -22,19 +24,15 @@ function getReferrerContext(referrer: string): { company?: string } | null {
   if (referrer.includes("linkedin.com")) {
     return { company: "LinkedIn" };
   }
-
   if (referrer.includes("greenhouse.io")) {
     return { company: "Greenhouse" };
   }
-
   if (referrer.includes("lever.co")) {
     return { company: "Lever" };
   }
-
   if (referrer.includes("workday.com")) {
     return { company: "Workday" };
   }
-
   return null;
 }
 
@@ -43,13 +41,14 @@ export function AISummaryPanel({
   initialContextToken,
   editMode,
   onSaveFallbackSummary,
+  onSaveContextSummaries,
 }: AISummaryPanelProps): ReactElement {
   const [summary, setSummary] = useState(profile.summary.fallback);
   const [contextLabel, setContextLabel] = useState(
     detectContextLabel(initialContextToken),
   );
   const [isLoading, setIsLoading] = useState(Boolean(initialContextToken));
-
+  const [requestNonce, setRequestNonce] = useState(0);
   useEffect((): (() => void) => {
     const contextToken = decodeContextToken(initialContextToken);
     const referrer = document.referrer || null;
@@ -66,10 +65,8 @@ export function AISummaryPanel({
         window.clearTimeout(fallbackTimer);
         return;
       }
-
       setContextLabel(detectContextLabel(contextToken, referrer));
       setIsLoading(true);
-
       const response = await fetch(toNarrativePath("/api/tailoring"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,7 +79,6 @@ export function AISummaryPanel({
           },
         }),
       });
-
       if (!response.ok) {
         setSummary(profile.summary.fallback);
         setIsLoading(false);
@@ -95,10 +91,9 @@ export function AISummaryPanel({
       setIsLoading(false);
       window.clearTimeout(fallbackTimer);
     }
-
     void tailorSummary();
     return (): void => window.clearTimeout(fallbackTimer);
-  }, [initialContextToken, profile]);
+  }, [initialContextToken, profile, requestNonce]);
 
   return (
     <aside className="ai-summary-panel" aria-busy={isLoading}>
@@ -109,6 +104,7 @@ export function AISummaryPanel({
             className="icon-button"
             type="button"
             aria-label="Regenerate tailored summary"
+            onClick={(): void => setRequestNonce((value) => value + 1)}
           >
             ↻
           </button>
@@ -142,6 +138,12 @@ export function AISummaryPanel({
           ) : (
             <p className="ai-summary-text">{summary}</p>
           )}
+          {editMode ? (
+            <ContextSummariesEditor
+              summaries={profile.summary.contextSummaries}
+              onSave={onSaveContextSummaries}
+            />
+          ) : null}
         </>
       )}
     </aside>
