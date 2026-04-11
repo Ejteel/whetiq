@@ -1,5 +1,5 @@
 import type { ParserResult } from "@mvp/core";
-import { parseNarrativeProfileDocument } from "@mvp/api/services/narrative-parser";
+import { parseNarrativeProfileDocument } from "../../../../packages/api/dist/services/narrative-parser.js";
 
 export class ParserService {
   constructor(

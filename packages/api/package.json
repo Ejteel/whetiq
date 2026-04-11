@@ -5,8 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
-    "./services/narrative-parser": "./src/services/narrative-parser.ts",
-    "./services/narrative-tailoring": "./src/services/narrative-tailoring.ts"
+    "./services/narrative-parser": "./dist/services/narrative-parser.js",
+    "./services/narrative-tailoring": "./dist/services/narrative-tailoring.js"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
