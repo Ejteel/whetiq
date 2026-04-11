@@ -2,7 +2,10 @@ import { createDefaultE2EState, ResourceNotFoundError } from "@mvp/core";
 import type { NarrativeProfile } from "@mvp/core";
 import { and, desc, eq } from "drizzle-orm";
 import type { IProfileRepository } from "@mvp/storage";
-import { DEFAULT_PROFILE_SLUG } from "../config/app.config";
+import {
+  DEFAULT_PROFILE_RECORD_ID,
+  DEFAULT_PROFILE_SLUG,
+} from "../config/app.config";
 import { getDb } from "../lib/db";
 import { profilesTable, profileVersionsTable } from "../lib/schema";
 
@@ -131,7 +134,7 @@ export class ProfileRepository implements IProfileRepository {
     await this.database()
       .insert(profilesTable)
       .values({
-        id: defaultProfile.id,
+        id: DEFAULT_PROFILE_RECORD_ID,
         slug: defaultProfile.slug,
         ownerId,
         createdAt: new Date(),
@@ -143,7 +146,7 @@ export class ProfileRepository implements IProfileRepository {
       .values([
         {
           id: crypto.randomUUID(),
-          profileId: defaultProfile.id,
+          profileId: DEFAULT_PROFILE_RECORD_ID,
           version: "draft",
           data: createDefaultE2EState().narrative.draft,
           publishedAt: null,
@@ -151,7 +154,7 @@ export class ProfileRepository implements IProfileRepository {
         },
         {
           id: crypto.randomUUID(),
-          profileId: defaultProfile.id,
+          profileId: DEFAULT_PROFILE_RECORD_ID,
           version: "published",
           data: defaultProfile,
           publishedAt: new Date(),
