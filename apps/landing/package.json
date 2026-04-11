@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -p 3001",
-    "build": "next build",
+    "build": "cd ../.. && npm run build && cd apps/landing && next build",
     "start": "next start -p 3001",
     "migrate": "drizzle-kit migrate"
   },
