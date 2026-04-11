@@ -1,35 +1,12 @@
 import { UnauthorizedError } from "@mvp/core";
 import { getServerSession } from "next-auth";
-import type { Session } from "next-auth";
+import type { WhetIQSession } from "./types";
 import { authOptions } from "./authOptions";
 import { isOwner } from "./isOwner";
-import type { WhetIQSession } from "./types";
-
-function toWhetIQSession(session: Session | null): WhetIQSession | null {
-  if (!session?.user?.email) {
-    return null;
-  }
-  return {
-    user: {
-      email: session.user.email,
-      name: session.user.name ?? null,
-      image: session.user.image ?? null,
-    },
-    expires: session.expires,
-  };
-}
-
-export const requireOwnerDependencies = {
-  authOptions,
-  getServerSession,
-  isOwner,
-};
 
 export async function requireOwner(): Promise<void> {
-  const session = await requireOwnerDependencies.getServerSession(
-    requireOwnerDependencies.authOptions,
-  );
-  if (!requireOwnerDependencies.isOwner(toWhetIQSession(session))) {
+  const session = await getServerSession(authOptions);
+  if (!isOwner(session as WhetIQSession | null)) {
     throw new UnauthorizedError();
   }
 }

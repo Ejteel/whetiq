@@ -1,12 +1,12 @@
 import { ResourceNotFoundError } from "@mvp/core";
 import { authOptions, isOwner } from "@whetiq/auth";
+import type { WhetIQSession } from "@whetiq/auth";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import type { ReactElement } from "react";
 import { NarrativePageShell } from "../../../components/features/edit/narrative-page-shell";
 import { decodeContextToken } from "../../../lib/token-decoder";
 import { profileService } from "../../../lib/services";
-import { toWhetIQSession } from "../../../lib/session";
 
 interface ProfilePageProps {
   params: Promise<{ slug: string }>;
@@ -24,7 +24,7 @@ export default async function ProfilePage({
     searchParams,
   ]);
   const session = await getServerSession(authOptions);
-  const editMode = isOwner(toWhetIQSession(session));
+  const editMode = isOwner(session as WhetIQSession | null);
   const isPreviewMode = editMode && preview === "visitor";
 
   try {

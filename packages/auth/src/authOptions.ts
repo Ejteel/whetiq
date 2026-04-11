@@ -2,8 +2,12 @@ import type { NextAuthOptions } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 
+type ProviderFactory<TFactory extends (...args: never[]) => unknown> =
+  | TFactory
+  | { default: TFactory };
+
 function resolveProviderFactory<TFactory extends (...args: never[]) => unknown>(
-  factory: TFactory | { default: TFactory },
+  factory: ProviderFactory<TFactory>,
 ): TFactory {
   return typeof factory === "function" ? factory : factory.default;
 }
@@ -25,7 +29,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     session({ session, token }) {
-      if (session.user && token.email) {
+      if (token.email) {
         session.user.email = token.email;
       }
       return session;

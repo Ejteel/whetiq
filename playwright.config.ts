@@ -20,6 +20,7 @@ export default defineConfig({
   globalSetup: "./tests/playwright.global-setup.ts",
   testDir: "./tests",
   testIgnore: ["**/*.test.ts", "**/*.test.mjs", "**/test-fixtures.ts"],
+  testMatch: ["**/e2e.spec.ts"],
   use: {
     baseURL: "http://127.0.0.1:3001",
     trace: "retain-on-failure",
