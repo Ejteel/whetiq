@@ -1,4 +1,4 @@
-import { generateTailoredNarrativeSummary } from "../../../../packages/api/dist/services/narrative-tailoring.js";
+import { generateTailoredNarrativeSummary } from "@mvp/api/services/narrative-tailoring";
 import type { NarrativeProfile, TailoringContext } from "@mvp/core";
 
 export class TailoringService {

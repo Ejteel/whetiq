@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./dist/index.js",
-    "./services/narrative-parser": "./dist/services/narrative-parser.js",
-    "./services/narrative-tailoring": "./dist/services/narrative-tailoring.js"
+    ".": "./src/index.ts",
+    "./services/narrative-parser": "./src/services/narrative-parser.ts",
+    "./services/narrative-tailoring": "./src/services/narrative-tailoring.ts"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "dependencies": {
     "@mvp/adapters": "file:../adapters",
     "@mvp/core": "file:../core",

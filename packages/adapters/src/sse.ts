@@ -1,13 +1,22 @@
-export async function* iterateSSE(response: Response): AsyncIterable<{ event: string; data: string }> {
+export async function* iterateSSE(
+  response: Response,
+): AsyncIterable<{ event: string; data: string }> {
   if (!response.body) {
     return;
   }
 
   const decoder = new TextDecoder();
+  const reader = response.body.getReader();
   let buffer = "";
 
-  for await (const chunk of response.body) {
-    buffer += decoder.decode(chunk, { stream: true });
+  for (;;) {
+    const { value } = await reader.read();
+
+    if (value === undefined) {
+      break;
+    }
+
+    buffer += decoder.decode(value, { stream: true });
 
     let boundary = buffer.indexOf("\n\n");
     while (boundary !== -1) {
@@ -34,6 +43,8 @@ export async function* iterateSSE(response: Response): AsyncIterable<{ event: st
       boundary = buffer.indexOf("\n\n");
     }
   }
+
+  buffer += decoder.decode();
 }
 
 export function safeParseJson<T>(input: string): T | undefined {
