@@ -258,6 +258,7 @@ button {
 .landing-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 1.5rem;
 }
 
@@ -265,7 +266,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-  min-height: 15rem;
+  height: 100%;
+  min-height: 16rem;
   padding: 1.5rem;
   border: 1px solid var(--hub-border);
   border-radius: 12px;
@@ -312,10 +314,11 @@ button {
   margin: 0;
   color: var(--hub-text-secondary);
   font-size: 0.875rem;
+  line-height: 1.6;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
 }
 
@@ -399,7 +402,13 @@ button {
 }
 
 .landing-footer-link {
+  color: var(--hub-text-muted);
+  transition: color 150ms ease;
   justify-self: end;
+}
+
+.landing-footer-link:hover {
+  color: var(--hub-accent);
 }
 
 .landing-footer-spacer {

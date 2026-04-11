@@ -61,10 +61,7 @@ export function useLandingEditorState({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
 
-  const activeProfile = useMemo(
-    () => (previewMode || !draft ? published : draft),
-    [draft, previewMode, published],
-  );
+  const activeProfile = useMemo(() => draft ?? published, [draft, published]);
   const hasUnpublishedChanges = profilesDiffer(draft, published);
 
   async function savePatch(patch: Partial<LandingProfile>): Promise<void> {
@@ -115,6 +112,7 @@ export function useLandingEditorState({
     }
 
     setPublished(draft);
+    setPreviewMode(true);
     setSaveState("published");
     window.setTimeout(() => setSaveState("idle"), 2_000);
   }

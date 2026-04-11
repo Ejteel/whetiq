@@ -25,12 +25,16 @@ function getStatusLabel(
     return "✓ Published";
   }
 
-  if (hasUnpublishedChanges) {
-    return "UNPUBLISHED CHANGES";
+  if (isPreviewMode && hasUnpublishedChanges) {
+    return "PREVIEWING DRAFT AS VISITOR";
   }
 
   if (isPreviewMode) {
-    return "PREVIEW AS VISITOR";
+    return "VIEWING PUBLISHED PAGE";
+  }
+
+  if (hasUnpublishedChanges) {
+    return "UNPUBLISHED CHANGES";
   }
 
   return "EDITING DRAFT";
@@ -54,7 +58,7 @@ export function EditBar({
           type="button"
           onClick={onTogglePreview}
         >
-          {isPreviewMode ? "Return to Draft" : "Preview as Visitor"}
+          {isPreviewMode ? "Return to Editing" : "Preview Draft as Visitor"}
         </button>
         <button
           className="landing-button-primary"

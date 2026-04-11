@@ -16,7 +16,8 @@ test("visitor loads /", async ({ page }) => {
 });
 
 test("owner entry is reachable on landing", async ({ page }) => {
-  await page.goto("/?edit=owner");
+  await page.goto("/");
+  await page.getByRole("link", { name: "Owner access" }).click();
 
   await expect(
     page.getByRole("heading", { name: "Sign in to edit this landing hub" }),
@@ -39,7 +40,7 @@ test.describe("owner mode", () => {
     await page.goto("/");
 
     await expect(
-      page.getByRole("button", { name: "Preview as Visitor" }),
+      page.getByRole("button", { name: "Preview Draft as Visitor" }),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: "Publish" })).toBeVisible();
   });
@@ -62,8 +63,9 @@ test.describe("owner mode", () => {
     const landingPublishButton = page.getByRole("button", { name: "Publish" });
     await expect(landingPublishButton).toBeEnabled();
     await landingPublishButton.click();
-    await expect(landingHeadlineInput).toHaveValue("Published from Playwright");
-    await page.getByRole("button", { name: "Preview as Visitor" }).click();
+    await expect(
+      page.getByRole("button", { name: "Return to Editing" }),
+    ).toBeVisible();
     await expect(page.getByText("Published from Playwright")).toBeVisible();
   });
 });

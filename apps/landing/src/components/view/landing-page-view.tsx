@@ -39,7 +39,11 @@ export function LandingPageView({
           <ProjectCardGrid profile={profile} />
         </div>
         {showOwnerEntry ? <OwnerEntryPanel callbackUrl={callbackUrl} /> : null}
-        <LandingFooter email={profile.email} name={profile.name} />
+        <LandingFooter
+          email={profile.email}
+          name={profile.name}
+          ownerEntryHref={callbackUrl}
+        />
       </div>
     </>
   );
