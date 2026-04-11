@@ -37,12 +37,26 @@ test.describe("owner mode", () => {
   test.use({ storageState: ownerStorageStatePath });
 
   test("authenticated owner sees edit mode on landing", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?edit=owner");
 
     await expect(
       page.getByRole("button", { name: "Preview Draft as Visitor" }),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: "Publish" })).toBeVisible();
+  });
+
+  test("authenticated owner still sees the public landing page at root", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    await expect(
+      page.getByRole("link", { name: "Owner access" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Preview Draft as Visitor" }),
+    ).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Publish" })).toHaveCount(0);
   });
 
   test("authenticated owner sees edit mode on narrative", async ({ page }) => {
@@ -56,7 +70,7 @@ test.describe("owner mode", () => {
   });
 
   test("publish flow works end to end", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?edit=owner");
     const landingHeadlineInput = page.locator("input.landing-headline");
     await landingHeadlineInput.fill("Published from Playwright");
     await landingHeadlineInput.blur();

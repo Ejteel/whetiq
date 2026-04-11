@@ -17,8 +17,9 @@ export default async function LandingPage({
 }: LandingPageProps): Promise<ReactElement> {
   const { edit } = await searchParams;
   const session = await getServerSession(authOptions);
-  const editMode = isOwner(session as WhetIQSession | null);
-  const showOwnerEntry = edit === "owner" && !editMode;
+  const ownerSession = isOwner(session as WhetIQSession | null);
+  const editMode = ownerSession && edit === "owner";
+  const showOwnerEntry = edit === "owner" && !ownerSession;
   const [publishedProfile, draftProfile] = await Promise.all([
     landingService.getPublished(),
     editMode ? landingService.getDraft() : Promise.resolve(null),
