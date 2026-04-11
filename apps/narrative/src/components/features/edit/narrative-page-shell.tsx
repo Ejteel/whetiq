@@ -154,6 +154,25 @@ export function NarrativePageShell({
     });
   }
 
+  function addTimelineEntry(): Promise<void> {
+    const now = new Date();
+    const newEntry: TimelineEntry = {
+      id: crypto.randomUUID(),
+      track: "work",
+      role: "New Role",
+      organization: "",
+      startDate: { month: now.getMonth() + 1, year: now.getFullYear() },
+      endDate: null,
+      bullets: [],
+      tags: [],
+      isVisible: false,
+    };
+
+    return savePatch({
+      timeline: [...(draft?.timeline ?? []), newEntry],
+    });
+  }
+
   return (
     <main className="narrative-page">
       {!editMode || isPreviewMode ? (
@@ -220,6 +239,7 @@ export function NarrativePageShell({
         profile={activeProfile}
         editMode={editMode && !isPreviewMode}
         onSaveEntry={updateTimelineEntry}
+        onAddEntry={addTimelineEntry}
       />
       <AnalyticsDashboard editMode={editMode && !isPreviewMode} slug={slug} />
     </main>
