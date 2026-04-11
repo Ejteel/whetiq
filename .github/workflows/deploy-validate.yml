@@ -1,0 +1,33 @@
+name: Deploy Validate
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Deployment mode
+        required: true
+        type: choice
+        options:
+          - demo
+          - private_live
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate demo mode
+        if: ${{ inputs.mode == 'demo' }}
+        run: |
+          echo "Validating demo mode configuration"
+          if [ "${{ vars.DEMO_MODE }}" != "true" ]; then
+            echo "DEMO_MODE must be true for demo deployments" >&2
+            exit 1
+          fi
+
+      - name: Validate private live mode
+        if: ${{ inputs.mode == 'private_live' }}
+        run: |
+          echo "Validating private live configuration"
+          [ -n "${{ secrets.OPENAI_API_KEY }}" ] || { echo "Missing OPENAI_API_KEY" >&2; exit 1; }
+          [ -n "${{ secrets.AUTH_SECRET }}" ] || { echo "Missing AUTH_SECRET" >&2; exit 1; }
+          [ -n "${{ vars.PRIVATE_AUTH_MODE }}" ] || { echo "Missing PRIVATE_AUTH_MODE" >&2; exit 1; }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-type AuthMode = "none" | "basic" | "oauth";
+type AuthMode = "none" | "basic" | "oauth" | "hybrid";
 
 function getExplicitMode(): AuthMode | undefined {
   const mode = process.env.PREVIEW_AUTH_MODE;
@@ -34,7 +34,7 @@ function unauthorizedResponse(): NextResponse {
   return new NextResponse("Authentication required", {
     status: 401,
     headers: {
-      "WWW-Authenticate": 'Basic realm="Aggreate Preview"'
+      "WWW-Authenticate": 'Basic realm="WhetIQ Private"'
     }
   });
 }

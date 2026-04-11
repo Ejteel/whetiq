@@ -1,29 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getProviders, signIn } from "next-auth/react";
 
 type ProviderId = "github" | "google";
 
-type ProviderState = Record<ProviderId, boolean>;
-
-const DEFAULT_PROVIDERS: ProviderState = {
-  github: false,
-  google: false
+type ProviderState = {
+  github: boolean;
+  google: boolean;
 };
 
-export function LoginButtons({ callbackUrl }: { callbackUrl: string }) {
-  const [providers, setProviders] = useState<ProviderState>(DEFAULT_PROVIDERS);
+export function LoginButtons() {
+  const [providers, setProviders] = useState<ProviderState>({ github: false, google: false });
 
   useEffect(() => {
     let active = true;
     void getProviders().then((data) => {
-      if (!active) {
+      if (!active || !data) {
         return;
       }
       setProviders({
-        github: Boolean(data?.github),
-        google: Boolean(data?.google)
+        github: Boolean(data.github),
+        google: Boolean(data.google)
       });
     });
 
@@ -32,14 +30,14 @@ export function LoginButtons({ callbackUrl }: { callbackUrl: string }) {
     };
   }, []);
 
-  const hasAnyProvider = useMemo(() => providers.github || providers.google, [providers.github, providers.google]);
+  const visible = (id: ProviderId) => providers[id];
 
   return (
-    <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
-      {providers.github ? (
+    <div style={{ display: "grid", gap: 10 }}>
+      {visible("github") ? (
         <button
           type="button"
-          onClick={() => void signIn("github", { callbackUrl })}
+          onClick={() => void signIn("github", { callbackUrl: "/internal" })}
           style={{
             display: "inline-block",
             textAlign: "left",
@@ -48,16 +46,17 @@ export function LoginButtons({ callbackUrl }: { callbackUrl: string }) {
             padding: "10px 14px",
             background: "#fffdf8",
             color: "#262521",
-            fontWeight: 600
+            fontWeight: 600,
+            cursor: "pointer"
           }}
         >
           Continue with GitHub
         </button>
       ) : null}
-      {providers.google ? (
+      {visible("google") ? (
         <button
           type="button"
-          onClick={() => void signIn("google", { callbackUrl })}
+          onClick={() => void signIn("google", { callbackUrl: "/internal" })}
           style={{
             display: "inline-block",
             textAlign: "left",
@@ -66,15 +65,16 @@ export function LoginButtons({ callbackUrl }: { callbackUrl: string }) {
             padding: "10px 14px",
             background: "#fffdf8",
             color: "#262521",
-            fontWeight: 600
+            fontWeight: 600,
+            cursor: "pointer"
           }}
         >
           Continue with Google
         </button>
       ) : null}
-      {!hasAnyProvider ? (
+      {!visible("github") && !visible("google") ? (
         <p style={{ color: "#7d7565", margin: 0 }}>
-          No OAuth providers configured for this deployment. Set `AUTH_GITHUB_*` and/or `AUTH_GOOGLE_*`.
+          No OAuth providers configured. Set `AUTH_GITHUB_*` and/or `AUTH_GOOGLE_*` environment variables.
         </p>
       ) : null}
     </div>

@@ -1,19 +1,82 @@
 export type Provider = "openai" | "anthropic" | "gemini";
+export type RuntimeMode = "demo" | "private_live";
+export type RuntimeSource = "forced_demo_endpoint" | "demo_env" | "app_runtime_mode" | "control_plane" | "fallback_default";
 
 export interface SendInput {
   provider: Provider;
   model: string;
   text: string;
   enhance?: boolean;
+  runtimeModeOverride?: {
+    mode: RuntimeMode;
+    source: RuntimeSource;
+  };
 }
 
 export interface SendOutput {
   text: string;
   transformedPrompt: string;
+  runtimeMode: RuntimeMode;
+  runtimeSource: RuntimeSource;
 }
 
-function isDemoModeEnabled(): boolean {
-  return process.env.DEMO_MODE === "true";
+const MODE_CACHE_MS = 15000;
+let cachedMode: RuntimeMode | null = null;
+let cachedAt = 0;
+
+function parseRuntimeMode(value: string | undefined): RuntimeMode | null {
+  if (value === "demo" || value === "private_live") {
+    return value;
+  }
+  return null;
+}
+
+async function resolveRuntimeMode(): Promise<{ mode: RuntimeMode; source: RuntimeSource }> {
+  if (process.env.DEMO_MODE === "true") {
+    return { mode: "demo", source: "demo_env" };
+  }
+
+  const explicit = parseRuntimeMode(process.env.APP_RUNTIME_MODE);
+  if (explicit) {
+    return { mode: explicit, source: "app_runtime_mode" };
+  }
+
+  const now = Date.now();
+  if (cachedMode && now - cachedAt < MODE_CACHE_MS) {
+    return { mode: cachedMode, source: "control_plane" };
+  }
+
+  const settingsUrl = process.env.CONTROL_PLANE_SETTINGS_URL;
+  const appId = process.env.CONTROL_PLANE_APP_ID;
+  const serviceToken = process.env.CONTROL_PLANE_SERVICE_TOKEN;
+
+  if (!settingsUrl || !appId || !serviceToken) {
+    return { mode: "private_live", source: "fallback_default" };
+  }
+
+  try {
+    const response = await fetch(`${settingsUrl}?appId=${encodeURIComponent(appId)}`, {
+      headers: {
+        Authorization: `Bearer ${serviceToken}`
+      },
+      cache: "no-store"
+    });
+    if (!response.ok) {
+      return { mode: "private_live", source: "fallback_default" };
+    }
+
+    const payload = (await response.json()) as { mode?: string };
+    const remote = parseRuntimeMode(payload.mode);
+    if (remote) {
+      cachedMode = remote;
+      cachedAt = now;
+      return { mode: remote, source: "control_plane" };
+    }
+  } catch {
+    return { mode: "private_live", source: "fallback_default" };
+  }
+
+  return { mode: "private_live", source: "fallback_default" };
 }
 
 function buildTransformedPrompt(input: SendInput): string {
@@ -113,7 +176,7 @@ async function sendGemini(model: string, prompt: string, apiKey: string): Promis
   return data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("") ?? "No response content";
 }
 
-function buildDemoResponse(input: SendInput, transformedPrompt: string): SendOutput {
+function buildDemoResponse(input: SendInput, transformedPrompt: string, runtimeSource: RuntimeSource): SendOutput {
   const words = input.text.trim().split(/\s+/).filter(Boolean).length;
   const preview = input.text.trim().slice(0, 180) || "No user input captured.";
 
@@ -139,15 +202,19 @@ function buildDemoResponse(input: SendInput, transformedPrompt: string): SendOut
 
   return {
     text,
-    transformedPrompt
+    transformedPrompt,
+    runtimeMode: "demo",
+    runtimeSource
   };
 }
 
 export async function sendProviderMessage(input: SendInput): Promise<SendOutput> {
   const transformedPrompt = buildTransformedPrompt(input);
+  const runtime = input.runtimeModeOverride ?? (await resolveRuntimeMode());
+  const mode = runtime.mode;
 
-  if (isDemoModeEnabled()) {
-    return buildDemoResponse(input, transformedPrompt);
+  if (mode === "demo") {
+    return buildDemoResponse(input, transformedPrompt, runtime.source);
   }
 
   if (input.provider === "openai") {
@@ -155,7 +222,12 @@ export async function sendProviderMessage(input: SendInput): Promise<SendOutput>
     if (!key) {
       throw new Error("OPENAI_API_KEY is not set");
     }
-    return { text: await sendOpenAI(input.model, transformedPrompt, key), transformedPrompt };
+    return {
+      text: await sendOpenAI(input.model, transformedPrompt, key),
+      transformedPrompt,
+      runtimeMode: runtime.mode,
+      runtimeSource: runtime.source
+    };
   }
 
   if (input.provider === "anthropic") {
@@ -163,7 +235,12 @@ export async function sendProviderMessage(input: SendInput): Promise<SendOutput>
     if (!key) {
       throw new Error("ANTHROPIC_API_KEY is not set");
     }
-    return { text: await sendAnthropic(input.model, transformedPrompt, key), transformedPrompt };
+    return {
+      text: await sendAnthropic(input.model, transformedPrompt, key),
+      transformedPrompt,
+      runtimeMode: runtime.mode,
+      runtimeSource: runtime.source
+    };
   }
 
   const key = process.env.GEMINI_API_KEY;
@@ -171,5 +248,10 @@ export async function sendProviderMessage(input: SendInput): Promise<SendOutput>
     throw new Error("GEMINI_API_KEY is not set");
   }
 
-  return { text: await sendGemini(input.model, transformedPrompt, key), transformedPrompt };
+  return {
+    text: await sendGemini(input.model, transformedPrompt, key),
+    transformedPrompt,
+    runtimeMode: runtime.mode,
+    runtimeSource: runtime.source
+  };
 }

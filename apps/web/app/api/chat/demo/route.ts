@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sendProviderMessage } from "../../lib/chatRuntime";
+import { sendProviderMessage } from "../../../lib/chatRuntime";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -10,7 +10,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       enhance?: boolean;
     };
 
-    const output = await sendProviderMessage(input);
+    const output = await sendProviderMessage({
+      ...input,
+      runtimeModeOverride: {
+        mode: "demo",
+        source: "forced_demo_endpoint"
+      }
+    });
 
     return NextResponse.json({
       text: output.text,

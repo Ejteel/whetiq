@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": ".",
     "jsx": "preserve",
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -13,8 +12,21 @@
     "allowJs": true,
     "noEmit": true,
     "incremental": true,
-    "baseUrl": ".",
-    "paths": {},
+    "baseUrl": "../../",
+    "paths": {
+      "@mvp/core": [
+        "packages/core/src/index.ts"
+      ],
+      "@mvp/adapters": [
+        "packages/adapters/src/index.ts"
+      ],
+      "@mvp/storage": [
+        "packages/storage/src/index.ts"
+      ],
+      "@mvp/api": [
+        "packages/api/src/index.ts"
+      ]
+    },
     "plugins": [
       {
         "name": "next"
