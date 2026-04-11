@@ -15,6 +15,14 @@ test("visitor loads /", async ({ page }) => {
   await expect(page.getByText("Career Narrative")).toBeVisible();
 });
 
+test("owner entry is reachable on landing", async ({ page }) => {
+  await page.goto("/?edit=owner");
+
+  await expect(
+    page.getByRole("heading", { name: "Sign in to edit this landing hub" }),
+  ).toBeVisible();
+});
+
 test("visitor loads /narrative", async ({ page }) => {
   await page.goto("/narrative");
 

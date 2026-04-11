@@ -412,6 +412,43 @@ button {
   font-size: 0.875rem;
 }
 
+.owner-entry-panel {
+  display: grid;
+  gap: 0.85rem;
+  width: min(100%, 40rem);
+  margin: 2rem auto 0;
+  padding: 1.5rem;
+  border: 1px solid var(--hub-border-hover);
+  border-radius: 12px;
+  background: rgba(26, 140, 126, 0.04);
+}
+
+.owner-entry-kicker {
+  margin: 0;
+  color: var(--hub-accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.owner-entry-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.owner-entry-copy {
+  margin: 0;
+  color: var(--hub-text-secondary);
+  line-height: 1.6;
+}
+
+.owner-entry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 @keyframes landing-fade-up {
   from {
     opacity: 0;

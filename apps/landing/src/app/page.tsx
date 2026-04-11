@@ -8,9 +8,17 @@ import { landingService } from "../lib/services";
 
 export const dynamic = "force-dynamic";
 
-export default async function LandingPage(): Promise<ReactElement> {
+interface LandingPageProps {
+  searchParams: Promise<{ edit?: string }>;
+}
+
+export default async function LandingPage({
+  searchParams,
+}: LandingPageProps): Promise<ReactElement> {
+  const { edit } = await searchParams;
   const session = await getServerSession(authOptions);
   const editMode = isOwner(session as WhetIQSession | null);
+  const showOwnerEntry = edit === "owner" && !editMode;
   const [publishedProfile, draftProfile] = await Promise.all([
     landingService.getPublished(),
     editMode ? landingService.getDraft() : Promise.resolve(null),
@@ -22,6 +30,10 @@ export default async function LandingPage(): Promise<ReactElement> {
       publishedProfile={publishedProfile}
     />
   ) : (
-    <LandingPageView profile={publishedProfile} />
+    <LandingPageView
+      callbackUrl="/?edit=owner"
+      profile={publishedProfile}
+      showOwnerEntry={showOwnerEntry}
+    />
   );
 }

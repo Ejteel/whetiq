@@ -2,14 +2,19 @@ import type { LandingProfile } from "@mvp/core";
 import type { ReactElement } from "react";
 import { ContactLinks } from "./contact-links";
 import { LandingFooter } from "./landing-footer";
+import { OwnerEntryPanel } from "./owner-entry-panel";
 import { ProjectCardGrid } from "./project-card-grid";
 
 export function LandingPageView({
+  callbackUrl = "/?edit=owner",
   profile,
   includePageChrome = true,
+  showOwnerEntry = false,
 }: {
+  callbackUrl?: string;
   profile: LandingProfile;
   includePageChrome?: boolean;
+  showOwnerEntry?: boolean;
 }): ReactElement {
   const content = (
     <>
@@ -33,6 +38,7 @@ export function LandingPageView({
         <div className="landing-animate-cards">
           <ProjectCardGrid profile={profile} />
         </div>
+        {showOwnerEntry ? <OwnerEntryPanel callbackUrl={callbackUrl} /> : null}
         <LandingFooter email={profile.email} name={profile.name} />
       </div>
     </>
