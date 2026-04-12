@@ -3,7 +3,7 @@
 import type { NarrativeProfile, TimelineEntry } from "@mvp/core";
 import type { ReactElement } from "react";
 import { TimelineCard } from "./timeline-card";
-import { YearMarker } from "./year-marker";
+import { computeTimelineLayout } from "./timeline-layout";
 
 interface TimelineSpineProps {
   profile: NarrativeProfile;
@@ -20,20 +20,6 @@ function getEntrySide(
   }
 
   return "left";
-}
-
-function getDisplayYears(
-  profile: NarrativeProfile,
-  editMode: boolean,
-): number[] {
-  const years = new Set<number>();
-  for (const entry of profile.timeline) {
-    if (editMode || entry.isVisible) {
-      years.add(entry.startDate.year);
-    }
-  }
-
-  return [...years].sort((left, right) => right - left);
 }
 
 function EmptyTimelineState({
@@ -65,55 +51,112 @@ export function TimelineSpine({
   onSaveEntry,
   onAddEntry,
 }: TimelineSpineProps): ReactElement {
-  const years = getDisplayYears(profile, editMode);
   const isEmpty = profile.timeline.length === 0;
 
-  return (
-    <section
-      className="timeline-section"
-      aria-label="Career timeline"
-      data-section-id="timeline"
-      role="region"
-    >
-      {isEmpty && editMode ? (
+  if (isEmpty && editMode) {
+    return (
+      <section
+        className="timeline-section"
+        aria-label="Career timeline"
+        data-section-id="timeline"
+        role="region"
+      >
         <EmptyTimelineState onAddEntry={onAddEntry} />
-      ) : (
-        <>
-          <div className="timeline-marker-column">
-            {years.map((year) => (
-              <div
-                key={year}
-                className="timeline-year-anchor"
-                id={`year-${year}`}
-              >
-                <YearMarker year={year} />
-              </div>
-            ))}
-          </div>
-          <div className="timeline-list">
-            {profile.timeline.map((entry: TimelineEntry) => (
-              <TimelineCard
-                key={entry.id}
-                entry={entry}
-                side={getEntrySide(entry.track)}
-                editMode={editMode}
-                onSave={onSaveEntry}
-              />
-            ))}
-            {editMode ? (
-              <div className="timeline-add-entry">
-                <button
-                  className="ghost-button"
-                  type="button"
-                  onClick={() => void onAddEntry()}
-                >
-                  + Add timeline entry
-                </button>
-              </div>
-            ) : null}
-          </div>
-        </>
-      )}
-    </section>
+      </section>
+    );
+  }
+
+  // Sort all visible entries by startDate descending (newest first = top of canvas)
+  const sorted = [...profile.timeline]
+    .filter((e) => editMode || e.isVisible)
+    .sort((a, b) => {
+      const aMs = a.startDate.year * 12 + a.startDate.month;
+      const bMs = b.startDate.year * 12 + b.startDate.month;
+      return bMs - aMs;
+    });
+
+  const leftEntries = sorted.filter((e) => getEntrySide(e.track) === "left");
+  const rightEntries = sorted.filter((e) => getEntrySide(e.track) === "right");
+
+  const today = {
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
+  };
+  const layout = computeTimelineLayout(sorted, today);
+
+  return (
+    <>
+      <section
+        className="timeline-section"
+        aria-label="Career timeline"
+        data-section-id="timeline"
+        role="region"
+      >
+        {/* Left column: work, military, other */}
+        <div
+          className="timeline-list-left"
+          style={{ height: layout.totalHeightPx }}
+        >
+          {leftEntries.map((entry: TimelineEntry) => (
+            <TimelineCard
+              key={entry.id}
+              entry={entry}
+              side="left"
+              topPx={layout.cards[entry.id]?.topPx}
+              heightPx={layout.cards[entry.id]?.heightPx}
+              editMode={editMode}
+              onSave={onSaveEntry}
+            />
+          ))}
+        </div>
+
+        {/* Center column: vertical spine + year markers */}
+        <div
+          className="timeline-marker-column"
+          style={{ height: layout.totalHeightPx }}
+        >
+          {layout.yearMarkers.map(({ year, topPx }) => (
+            <div
+              key={year}
+              id={`year-${year}`}
+              className="timeline-year-marker"
+              style={{ top: topPx }}
+            >
+              {year}
+            </div>
+          ))}
+        </div>
+
+        {/* Right column: education */}
+        <div
+          className="timeline-list-right"
+          style={{ height: layout.totalHeightPx }}
+        >
+          {rightEntries.map((entry: TimelineEntry) => (
+            <TimelineCard
+              key={entry.id}
+              entry={entry}
+              side="right"
+              topPx={layout.cards[entry.id]?.topPx}
+              heightPx={layout.cards[entry.id]?.heightPx}
+              editMode={editMode}
+              onSave={onSaveEntry}
+            />
+          ))}
+        </div>
+      </section>
+
+      {editMode ? (
+        <div className="timeline-add-entry">
+          <button
+            className="ghost-button"
+            type="button"
+            onClick={() => void onAddEntry()}
+          >
+            + Add timeline entry
+          </button>
+        </div>
+      ) : null}
+    </>
   );
 }

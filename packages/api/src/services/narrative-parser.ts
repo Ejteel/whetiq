@@ -6,83 +6,184 @@ interface ParseNarrativeProfileDocumentInput {
   mimeType: string;
 }
 
-const TIMELINE_CHUNK_SIZE = 3;
-const MAX_PARSED_TIMELINE_ENTRIES = 4;
-const DEFAULT_START_YEAR = 2020;
+// ─── Claude response schema ────────────────────────────────────────────────
 
-function detectTrackType(value: string): TrackType {
-  const normalizedValue = value.toLowerCase();
-
-  if (
-    normalizedValue.includes("army") ||
-    normalizedValue.includes("navy") ||
-    normalizedValue.includes("air force") ||
-    normalizedValue.includes("marine")
-  ) {
-    return "military";
-  }
-
-  if (
-    normalizedValue.includes("university") ||
-    normalizedValue.includes("college") ||
-    normalizedValue.includes("school") ||
-    normalizedValue.includes("mba")
-  ) {
-    return "education";
-  }
-
-  return "work";
+interface ParsedDate {
+  month: number;
+  year: number;
 }
 
-function chunkLines(lines: string[]): string[][] {
-  const chunks: string[][] = [];
-
-  for (let index = 0; index < lines.length; index += TIMELINE_CHUNK_SIZE) {
-    chunks.push(lines.slice(index, index + TIMELINE_CHUNK_SIZE));
-  }
-
-  return chunks.slice(0, MAX_PARSED_TIMELINE_ENTRIES);
+interface ParsedEntry {
+  role: string;
+  organization: string;
+  track: TrackType;
+  startDate: ParsedDate;
+  endDate: ParsedDate | null;
+  bullets: string[];
+  tags: string[];
+  confidence: "high" | "medium" | "low";
 }
 
-function buildTimelineEntry(chunk: string[], index: number): TimelineEntry {
-  const [
-    roleLine = `Imported role ${index + 1}`,
-    organizationLine = "Organization TBD",
-    bulletLine,
-  ] = chunk;
-  const track = detectTrackType(`${roleLine} ${organizationLine}`);
+interface ClaudeParserResponse {
+  name: string;
+  nameConfidence: "high" | "medium" | "low";
+  location: string;
+  locationConfidence: "high" | "medium" | "low";
+  availability: string;
+  summary: string;
+  summaryConfidence: "high" | "medium" | "low";
+  timeline: ParsedEntry[];
+  unmatchedContent: string[];
+}
+
+// ─── System prompt ─────────────────────────────────────────────────────────
+
+const SYSTEM_PROMPT = `You are a precise resume parser. Extract structured career data from the provided resume text and return ONLY valid JSON — no commentary, no markdown fences.
+
+Return exactly this JSON shape:
+{
+  "name": "Full Name",
+  "nameConfidence": "high" | "medium" | "low",
+  "location": "City, ST or empty string",
+  "locationConfidence": "high" | "medium" | "low",
+  "availability": "A short sentence describing what the person is open to, inferred from their career level and trajectory",
+  "summary": "The verbatim or lightly cleaned text from the resume's summary/objective section",
+  "summaryConfidence": "high" | "medium" | "low",
+  "timeline": [
+    {
+      "role": "Job title or degree name",
+      "organization": "Employer or school name",
+      "track": "work" | "education" | "military" | "other",
+      "startDate": { "month": 1-12, "year": YYYY },
+      "endDate": { "month": 1-12, "year": YYYY } | null,
+      "bullets": ["bullet 1", "bullet 2", "bullet 3", "bullet 4"],
+      "tags": ["tag1", "tag2", "tag3"],
+      "confidence": "high" | "medium" | "low"
+    }
+  ],
+  "unmatchedContent": ["any resume content that doesn't fit the above fields"]
+}
+
+Rules:
+- Parse ALL experience, education, and military entries — one entry per role/degree, not per employer.
+- For date ranges like "2020–2024": startDate month=1, endDate month=12 of the end year. If the end year is the current year or future, set endDate to null (treat as ongoing).
+- The current year is ${new Date().getFullYear()}.
+- For education: if only a graduation year is listed, set endDate to { month: 5, year: YYYY } and infer a plausible start year (typically 2 years prior for MBA, 4 years for BS).
+- track values: "work" for jobs, "education" for degrees/courses, "military" for military service, "other" for everything else.
+- bullets: max 4, verbatim from resume if present, otherwise empty array.
+- tags: 2-5 short keyword tags derived from the role/bullets (e.g. "product", "engineering", "leadership").
+- confidence is "high" if dates/title/org are unambiguous, "medium" if inferred, "low" if guessed.
+- unmatchedContent: content that doesn't belong to any specific entry (e.g. certifications section, additional interests).
+- Return ONLY the JSON object, nothing else.`;
+
+// ─── Claude API call ───────────────────────────────────────────────────────
+
+async function callClaudeParser(
+  resumeText: string,
+): Promise<ClaudeParserResponse> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "ANTHROPIC_API_KEY is not configured. Add it to apps/narrative/.env.local.",
+    );
+  }
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 4096,
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: `Parse this resume:\n\n${resumeText}`,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Anthropic API error ${response.status}: ${errorBody}`);
+  }
+
+  const data = (await response.json()) as {
+    content: Array<{ type: string; text: string }>;
+  };
+
+  const text = data.content.find((block) => block.type === "text")?.text ?? "";
+
+  // Strip any accidental markdown fences
+  const cleaned = text
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  return JSON.parse(cleaned) as ClaudeParserResponse;
+}
+
+// ─── Map Claude response → ParserResult ───────────────────────────────────
+
+function mapToParserResult(parsed: ClaudeParserResponse): ParserResult {
+  const timeline: TimelineEntry[] = parsed.timeline.map((entry) => ({
+    id: crypto.randomUUID(),
+    track: entry.track,
+    role: entry.role,
+    organization: entry.organization,
+    startDate: entry.startDate,
+    endDate: entry.endDate,
+    bullets: entry.bullets.slice(0, 4),
+    tags: entry.tags.slice(0, 5),
+    isVisible: true,
+  }));
+
+  const confidenceByField: Record<string, "high" | "medium" | "low"> = {
+    name: parsed.nameConfidence,
+    location: parsed.locationConfidence,
+    availability: "medium",
+    "summary.fallback": parsed.summaryConfidence,
+  };
+
+  parsed.timeline.forEach((entry, index) => {
+    confidenceByField[`timeline.${index}`] = entry.confidence;
+  });
 
   return {
-    id: crypto.randomUUID(),
-    track,
-    role: roleLine,
-    organization: organizationLine,
-    startDate: {
-      month: 1,
-      year: DEFAULT_START_YEAR + index,
+    profile: {
+      id: crypto.randomUUID(),
+      slug: "ethan",
+      name: parsed.name,
+      location: parsed.location,
+      availability: parsed.availability,
+      identityStatements: [],
+      summary: {
+        fallback: parsed.summary,
+        contextSummaries: [],
+      },
+      timeline,
     },
-    endDate:
-      index === 0 ? null : { month: 12, year: DEFAULT_START_YEAR + index },
-    bullets: [bulletLine || organizationLine].slice(0, 4),
-    tags: [track].slice(0, 5),
-    isVisible: true,
+    unmatchedContent: parsed.unmatchedContent,
+    confidenceByField,
   };
 }
 
-export async function parseNarrativeProfileDocument(
-  input: ParseNarrativeProfileDocumentInput,
-): Promise<ParserResult> {
-  const lines = input.documentText
+// ─── Fallback: naive stub when no API key ─────────────────────────────────
+
+function naiveFallbackParse(
+  documentText: string,
+  fileName: string,
+): ParserResult {
+  const lines = documentText
     .split("\n")
-    .map((line) => line.trim())
+    .map((l) => l.trim())
     .filter(Boolean);
-  const [name = "Candidate Name", location = "Location TBD"] = lines;
-  const detailLines = lines.slice(2);
-  const chunks = chunkLines(detailLines);
-  const parsedTimeline = chunks.map((chunk, index) =>
-    buildTimelineEntry(chunk, index),
-  );
-  const matchedLineCount = chunks.length * TIMELINE_CHUNK_SIZE;
+  const [name = "Candidate Name", location = ""] = lines;
 
   return {
     profile: {
@@ -93,20 +194,30 @@ export async function parseNarrativeProfileDocument(
       availability: "Open to discussion",
       identityStatements: [],
       summary: {
-        fallback: `Imported from ${input.fileName} (${input.mimeType}).`,
+        fallback: `Imported from ${fileName}. Add ANTHROPIC_API_KEY to .env.local for intelligent parsing.`,
         contextSummaries: [],
       },
-      timeline: parsedTimeline,
+      timeline: [],
     },
-    unmatchedContent: detailLines.slice(matchedLineCount),
+    unmatchedContent: lines.slice(2),
     confidenceByField: {
-      name: "high",
-      location: "medium",
+      name: "low",
+      location: "low",
       availability: "low",
-      "summary.fallback": "medium",
-      ...Object.fromEntries(
-        parsedTimeline.map((_, index) => [`timeline.${index}`, "medium"]),
-      ),
+      "summary.fallback": "low",
     },
   };
+}
+
+// ─── Public entry point ────────────────────────────────────────────────────
+
+export async function parseNarrativeProfileDocument(
+  input: ParseNarrativeProfileDocumentInput,
+): Promise<ParserResult> {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return naiveFallbackParse(input.documentText, input.fileName);
+  }
+
+  const parsed = await callClaudeParser(input.documentText);
+  return mapToParserResult(parsed);
 }

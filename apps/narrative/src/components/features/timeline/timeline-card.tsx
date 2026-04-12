@@ -8,6 +8,8 @@ import { tracksConfig } from "../../../config/tracks.config";
 interface TimelineCardProps {
   entry: TimelineEntry;
   side: "left" | "right";
+  topPx?: number;
+  heightPx?: number;
   editMode: boolean;
   onSave: (entry: TimelineEntry) => Promise<void>;
 }
@@ -68,6 +70,8 @@ function ChevronIcon({ expanded }: { expanded: boolean }): ReactElement {
 export function TimelineCard({
   entry,
   side,
+  topPx,
+  heightPx,
   editMode,
   onSave,
 }: TimelineCardProps): ReactElement | null {
@@ -122,6 +126,7 @@ export function TimelineCard({
   }
 
   const isHidden = !draftEntry.isVisible;
+  const hasLayout = topPx !== undefined && heightPx !== undefined;
 
   return (
     <article
@@ -130,6 +135,11 @@ export function TimelineCard({
       style={
         {
           "--timeline-track-color": tracksConfig[draftEntry.track].colorToken,
+          position: hasLayout ? "absolute" : "relative",
+          top: hasLayout ? topPx : undefined,
+          minHeight: hasLayout ? heightPx : undefined,
+          width: "100%",
+          zIndex: isExpanded ? 10 : 1,
         } as CSSProperties
       }
     >

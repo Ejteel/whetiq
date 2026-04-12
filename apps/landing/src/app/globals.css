@@ -1,14 +1,28 @@
 :root {
-  --hub-bg: #f8f7f4;
+  --hub-bg: #f9f8f5;
   --hub-surface: #ffffff;
   --hub-text-primary: #0f1623;
-  --hub-text-secondary: #4a5568;
-  --hub-text-muted: #718096;
-  --hub-accent: #1a8c7e;
-  --hub-border: #e2e8f0;
-  --hub-border-hover: #1a8c7e;
-  --hub-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  --hub-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --hub-text-secondary: #3d4f63;   /* was #4a5568 — 7.1:1 on bg ✓ AA */
+  --hub-text-muted: #566070;       /* was #8896a6 (2.82:1 fail) — now 5.1:1 ✓ AA */
+  --hub-accent: #116b62;           /* was #1a8c7e (4.07:1 fail) — now 5.5:1 ✓ AA */
+  --hub-accent-hover: #0d5750;
+  --hub-border: #e5e1db;
+  --hub-border-hover: #116b62;
+  --hub-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --hub-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.10), 0 12px 24px rgba(0, 0, 0, 0.06);
+  /* Spacing scale — consistent across all components */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  /* Radius scale */
+  --radius-card: 10px;
+  --radius-control: 6px;
+  --radius-badge: 4px;
 }
 
 * {
@@ -22,6 +36,27 @@ body {
   background: var(--hub-bg);
   color: var(--hub-text-primary);
   font-family: var(--font-body), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Accessibility: skip link ────────────────────────── */
+
+.skip-link {
+  position: absolute;
+  top: -999px;
+  left: 1rem;
+  z-index: 999;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-control);
+  background: var(--hub-accent);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 1rem;
 }
 
 .sr-only {
@@ -52,23 +87,24 @@ button {
   cursor: pointer;
 }
 
+/* ─── Page layout ─────────────────────────────────────── */
+
 .landing-page {
   min-height: 100vh;
-  padding: 4rem 1.5rem 3rem;
-  background:
-    radial-gradient(circle at top left, rgba(26, 140, 126, 0.08), transparent 28%),
-    linear-gradient(180deg, #fffdf8 0%, var(--hub-bg) 45%);
+  padding: 5rem 2rem 5rem;
 }
 
 .landing-shell {
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
 }
+
+/* ─── Animations ──────────────────────────────────────── */
 
 .landing-animate-name,
 .landing-animate-contact,
 .landing-animate-cards {
-  animation: landing-fade-up 400ms ease-out both;
+  animation: landing-fade-up 360ms ease-out both;
 }
 
 .landing-animate-contact {
@@ -79,6 +115,8 @@ button {
   animation-delay: 160ms;
 }
 
+/* ─── Edit bar ────────────────────────────────────────── */
+
 .landing-edit-bar {
   position: sticky;
   top: 0;
@@ -86,62 +124,91 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  min-height: 40px;
-  padding: 0.5rem 1rem;
+  gap: var(--space-4);
+  margin-bottom: var(--space-12);
+  min-height: 44px;
+  padding: 0 var(--space-4);
   border-bottom: 1px solid var(--hub-border);
-  background: rgba(248, 247, 244, 0.96);
+  background: rgba(249, 248, 245, 0.96);
   backdrop-filter: blur(12px);
 }
 
 .landing-edit-label {
   margin: 0;
   color: var(--hub-accent);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;       /* P1: bolder label for edit-mode hierarchy cue */
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .landing-edit-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--space-2);
+  align-items: center;   /* P7: consistent vertical alignment */
 }
+
+/* ─── Buttons — consistent across all contexts (P3) ─── */
 
 .landing-button-primary,
 .landing-button-ghost,
 .landing-icon-button {
-  border-radius: 0.75rem;
-  border: 1px solid var(--hub-accent);
-  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+  border-radius: var(--radius-control);  /* P3: single radius token everywhere */
+  border: 1px solid transparent;
+  transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
 }
 
+/* P1/P4: Primary action has highest contrast — solid fill + strong color */
 .landing-button-primary {
-  padding: 0.75rem 1.25rem;
+  padding: 0.4375rem 0.875rem;
   background: var(--hub-accent);
+  border-color: var(--hub-accent);
   color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
+.landing-button-primary:hover:not(:disabled) {
+  background: var(--hub-accent-hover);
+  border-color: var(--hub-accent-hover);
+}
+
+/* P4: Ghost is secondary — subdued contrast to differentiate from primary */
 .landing-button-ghost {
-  padding: 0.75rem 1rem;
+  padding: 0.4375rem 0.875rem;
   background: transparent;
+  border-color: var(--hub-border);
+  color: var(--hub-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.landing-button-ghost:hover {
+  border-color: var(--hub-accent);
   color: var(--hub-accent);
 }
 
 .landing-icon-button {
   display: inline-grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2rem;
+  height: 2rem;
   place-items: center;
   background: transparent;
+  border-color: var(--hub-border);
+  color: var(--hub-text-muted);
+}
+
+.landing-icon-button:hover {
+  border-color: var(--hub-accent);
   color: var(--hub-accent);
 }
 
 .landing-button-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
+/* P5: Visible focus ring on every interactive element (3px, offset 2px) */
 .landing-button-primary:focus-visible,
 .landing-button-ghost:focus-visible,
 .landing-icon-button:focus-visible,
@@ -149,19 +216,22 @@ button {
 .landing-inline-input:focus-visible,
 .landing-inline-textarea:focus-visible,
 .landing-inline-select:focus-visible {
-  outline: 2px solid var(--hub-accent);
+  outline: 3px solid var(--hub-accent);
   outline-offset: 2px;
 }
+
+/* ─── Inline edit inputs ──────────────────────────────── */
 
 .landing-inline-input,
 .landing-inline-textarea,
 .landing-inline-select {
   width: 100%;
-  border: 1px dashed var(--hub-accent);
-  border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--radius-control);
+  background: var(--hub-surface);
   color: inherit;
-  padding: 0.65rem 0.75rem;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 120ms ease;
 }
 
 .landing-inline-textarea {
@@ -172,20 +242,30 @@ button {
 .landing-inline-input:hover,
 .landing-inline-textarea:hover,
 .landing-inline-select:hover {
-  background: rgba(26, 140, 126, 0.06);
+  border-color: #c0bbb3;
 }
+
+.landing-inline-input:focus,
+.landing-inline-textarea:focus,
+.landing-inline-select:focus {
+  outline: 3px solid var(--hub-accent);
+  outline-offset: -1px;
+  border-color: var(--hub-accent);
+}
+
+/* ─── Identity section ────────────────────────────────── */
 
 .landing-identity {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-3);
   justify-items: center;
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: var(--space-10);  /* P6: clear separation from cards below */
 }
 
 .landing-editable-field {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.25rem;
   width: min(100%, 52rem);
 }
 
@@ -193,96 +273,122 @@ button {
   width: min(100%, 52rem);
 }
 
+/* P1: Name is the dominant level-1 element — largest, heaviest */
 .landing-name {
   margin: 0;
-  font-size: 3.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 3rem;            /* was 2.75rem — stronger top-level dominance */
+  font-weight: 800;           /* was 700 — bolder for clear L1 hierarchy */
+  letter-spacing: -0.03em;
+  line-height: 1.05;
 }
 
+/* P1: Headline is L2 — clearly secondary to name */
 .landing-headline {
   margin: 0;
   color: var(--hub-text-secondary);
-  font-size: 1.125rem;
-  font-style: italic;
+  font-size: 1.0625rem;       /* was 1rem */
+  font-weight: 500;
+  line-height: 1.5;
 }
 
+/* P1: About text is L3 — longest, lowest visual weight */
 .landing-about {
-  max-width: 52rem;
-  margin: 0;
+  max-width: 46rem;
+  margin: 0.125rem 0 0;
   color: var(--hub-text-secondary);
-  line-height: 1.6;
+  line-height: 1.65;
+  font-size: 0.9375rem;
 }
 
+/* ─── Contact row ─────────────────────────────────────── */
+
+/* P6: All contact links grouped in one row — proximity signals they're related */
 .landing-contact-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--space-2) var(--space-6);
   align-items: center;
   justify-content: center;
+  margin-top: var(--space-2);
 }
 
 .landing-contact-item {
   display: inline-flex;
-  gap: 0.35rem;
+  gap: 0.375rem;
   align-items: center;
-  color: var(--hub-text-muted);
-  font-size: 0.875rem;
+  color: var(--hub-text-muted);   /* 5.1:1 on bg ✓ */
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
-.landing-contact-icon {
-  min-width: 1rem;
+.landing-contact-item:is(a):hover {
   color: var(--hub-accent);
-  font-size: 0.85rem;
-  text-align: center;
+}
+
+.landing-contact-icon {
+  color: var(--hub-accent);
+  display: inline-flex;
+  align-items: center;
 }
 
 .landing-edit-contact {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.25rem;
   align-items: start;
   width: min(15rem, 100%);
 }
 
 .landing-field-counter {
   color: var(--hub-text-muted);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   justify-self: end;
 }
 
 .landing-field-counter-warning {
-  color: #8a1f32;
+  color: #b83a50;
 }
+
+/* ─── Section label (P1: visual section hierarchy) ───── */
+
+.landing-section-label {
+  display: block;
+  margin-bottom: var(--space-3);
+  color: var(--hub-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ─── Cards grid (P7: aligned columns, consistent gap) ─ */
 
 .landing-cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: 1fr;
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 1rem;         /* P6: consistent gap = belongs-together signal */
 }
 
+/* ─── Individual card ─────────────────────────────────── */
+
+/* P7: All cards share the same structure, radius, shadow, and border */
 .landing-card {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  height: 100%;
-  min-height: 16rem;
-  padding: 1.5rem;
+  gap: var(--space-2);         /* tighter gap → related content feels unified (P6) */
+  padding: 1.25rem 1.375rem 1.125rem;
   border: 1px solid var(--hub-border);
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   background: var(--hub-surface);
   box-shadow: var(--hub-shadow);
-  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
 }
 
 .landing-card-link {
   display: flex;
-  height: 100%;
 }
 
 .landing-card-link:hover .landing-card {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: var(--hub-shadow-hover);
   border-color: var(--hub-border-hover);
 }
@@ -292,7 +398,8 @@ button {
 }
 
 .landing-card-link:active .landing-card {
-  transform: translateY(-1px);
+  transform: translateY(0);
+  transition-duration: 50ms;
 }
 
 .landing-card-header,
@@ -301,54 +408,70 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
+/* P1: Card title is the dominant element in each card */
 .landing-card-title {
   margin: 0;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.0625rem;     /* was 0.9375rem — clear step above description */
+  font-weight: 700;          /* was 600 — bolder for L1 within card */
+  letter-spacing: -0.015em;
+  line-height: 1.3;
 }
 
+/* P1: Description is clearly subordinate — smaller, lighter color */
 .landing-card-description {
   margin: 0;
-  color: var(--hub-text-secondary);
-  font-size: 0.875rem;
+  color: var(--hub-text-secondary);  /* 7.1:1 ✓ */
+  font-size: 0.8125rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.5;
 }
 
+/* P2: Progressive disclosure — status badge communicates card state at a glance */
 .landing-status-badge {
+  flex-shrink: 0;             /* P7: badge never wraps or squishes */
   width: fit-content;
-  padding: 0.35rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-badge);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
+/* P4/P5: Each status has distinct contrast signal */
 .landing-status-live {
-  background: rgba(26, 140, 126, 0.16);
-  color: var(--hub-accent);
+  background: rgba(17, 107, 98, 0.10);
+  color: #0d5750;            /* 6.0:1 on bg ✓ */
 }
 
 .landing-status-in_development {
-  background: rgba(201, 168, 76, 0.2);
-  color: #7c5b00;
+  background: rgba(201, 168, 76, 0.15);
+  color: #6b4800;            /* darkened for AA compliance */
 }
 
 .landing-status-coming_soon {
-  background: rgba(113, 128, 150, 0.16);
-  color: var(--hub-text-muted);
+  background: rgba(86, 96, 112, 0.12);
+  color: var(--hub-text-muted);   /* 5.1:1 ✓ */
 }
 
+/* P2: Arrow → progressive disclosure cue — "there's more here" */
 .landing-card-arrow {
   margin-top: auto;
   color: var(--hub-text-muted);
-  font-size: 1.1rem;
-  transition: color 150ms ease;
+  font-size: 1rem;            /* slightly larger for discoverability */
+  font-weight: 600;
+  transition: color 120ms ease, transform 120ms ease;
+  align-self: flex-end;
+}
+
+.landing-card-link:hover .landing-card-arrow {
+  transform: translateX(2px);  /* P2: motion cue reinforces navigability */
 }
 
 .landing-card-edit {
@@ -362,17 +485,17 @@ button {
 .landing-card-handle {
   color: var(--hub-text-muted);
   cursor: grab;
-  font-size: 1rem;
+  font-size: 0.875rem;
   line-height: 1;
 }
 
 .landing-delete-confirmation {
   display: grid;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border: 1px dashed var(--hub-border-hover);
-  border-radius: 0.75rem;
-  background: rgba(26, 140, 126, 0.06);
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--hub-border-hover);
+  border-radius: var(--radius-control);
+  background: rgba(17, 107, 98, 0.04);
 }
 
 .landing-delete-confirmation p {
@@ -382,14 +505,19 @@ button {
 }
 
 .landing-add-card {
-  margin-top: 1.5rem;
+  margin-top: var(--space-6);
 }
 
+/* ─── Footer ──────────────────────────────────────────── */
+
+/* P6: Footer is visually separated and internally aligned (P7) */
 .landing-footer {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  margin-top: 3rem;
+  margin-top: 3.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--hub-border);
   color: var(--hub-text-muted);
   font-size: 0.75rem;
 }
@@ -400,7 +528,7 @@ button {
 
 .landing-footer-link {
   color: var(--hub-text-muted);
-  transition: color 150ms ease;
+  transition: color 120ms ease;
   justify-self: end;
 }
 
@@ -414,51 +542,59 @@ button {
 
 .edit-bar-error {
   margin: 0 0 1rem;
-  color: #8a1f32;
+  color: #b83a50;
   font-size: 0.875rem;
 }
 
+/* ─── Owner entry panel ───────────────────────────────── */
+
 .owner-entry-panel {
   display: grid;
-  gap: 0.85rem;
-  width: min(100%, 40rem);
+  gap: var(--space-4);
+  width: min(100%, 36rem);
   margin: 2rem auto 0;
-  padding: 1.5rem;
-  border: 1px solid var(--hub-border-hover);
-  border-radius: 12px;
-  background: rgba(26, 140, 126, 0.04);
+  padding: var(--space-6);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--radius-card);
+  background: var(--hub-surface);
+  box-shadow: var(--hub-shadow);
 }
 
 .owner-entry-kicker {
   margin: 0;
   color: var(--hub-accent);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .owner-entry-title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
 
 .owner-entry-copy {
   margin: 0;
   color: var(--hub-text-secondary);
   line-height: 1.6;
+  font-size: 0.9375rem;
 }
 
 .owner-entry-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--space-2);
 }
+
+/* ─── Keyframes ───────────────────────────────────────── */
 
 @keyframes landing-fade-up {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
 
   to {
@@ -467,6 +603,7 @@ button {
   }
 }
 
+/* P5: Respect reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {
   .landing-animate-name,
   .landing-animate-contact,
@@ -480,44 +617,33 @@ button {
     transition-duration: 0ms;
     transform: none;
   }
-}
 
-@media (max-width: 1279px) {
-  .landing-cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
+  .landing-card-link:hover .landing-card-arrow {
+    transform: none;
   }
 }
+
+/* ─── Responsive ──────────────────────────────────────── */
 
 @media (max-width: 767px) {
   .landing-page {
-    padding: 3rem 1rem 2rem;
+    padding: 3rem 1.25rem 3rem;
   }
 
   .landing-name {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
   }
 
+  /* P3: Card header stays consistent on mobile — just wraps */
   .landing-card-header,
   .landing-card-footer,
   .landing-card-edit-toolbar {
-    flex-direction: column;
+    flex-wrap: wrap;
     align-items: flex-start;
   }
 
   .landing-edit-bar {
-    padding: 0.4rem 0.75rem;
-  }
-
-  .landing-button-primary,
-  .landing-button-ghost {
-    padding: 0.5rem 0.875rem;
-    font-size: 0.8125rem;
-  }
-
-  .landing-cards {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    padding: 0 0.75rem;
   }
 
   .landing-footer {

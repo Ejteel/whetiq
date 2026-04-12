@@ -174,7 +174,7 @@ export function NarrativePageShell({
   }
 
   return (
-    <main className="narrative-page">
+    <main id="main-content" className="narrative-page">
       {!editMode || isPreviewMode ? (
         <NarrativeAnalytics
           contextToken={initialContextToken}
