@@ -164,21 +164,37 @@ export function ParserOverlay({
   async function parseDocument(): Promise<void> {
     setErrorMessage(null);
 
-    const sourceText =
-      documentText.trim() || (selectedFile ? await selectedFile.text() : "");
-    if (!sourceText) {
+    let documentBase64: string | undefined;
+    let sourceText = documentText.trim();
+
+    if (!sourceText && selectedFile) {
+      if (selectedFile.type === "application/pdf") {
+        // PDFs must be sent as base64 so Anthropic can use its native document
+        // API. Reading a PDF as text produces binary garbage, not extractable text.
+        const buf = await selectedFile.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let binary = "";
+        bytes.forEach((b) => (binary += String.fromCharCode(b)));
+        documentBase64 = btoa(binary);
+      } else {
+        sourceText = await selectedFile.text();
+      }
+    }
+
+    if (!sourceText && !documentBase64) {
       setErrorMessage("Upload a file or paste document text to continue.");
       return;
     }
 
     setPhase("parsing");
-    setSourcePreview(sourceText);
+    setSourcePreview(sourceText || "(PDF document)");
 
     const response = await fetch(toNarrativePath("/api/parser"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         documentText: sourceText,
+        documentBase64,
         fileName: selectedFile?.name ?? `${slug}-resume.txt`,
         mimeType: selectedFile?.type ?? "text/plain",
       }),

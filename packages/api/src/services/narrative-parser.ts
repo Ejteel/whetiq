@@ -2,6 +2,7 @@ import type { ParserResult, TimelineEntry, TrackType } from "@mvp/core";
 
 interface ParseNarrativeProfileDocumentInput {
   documentText: string;
+  documentBase64?: string;
   fileName: string;
   mimeType: string;
 }
@@ -80,6 +81,7 @@ Rules:
 
 async function callClaudeParser(
   resumeText: string,
+  documentBase64?: string,
 ): Promise<ClaudeParserResponse> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -87,6 +89,22 @@ async function callClaudeParser(
       "ANTHROPIC_API_KEY is not configured. Add it to apps/narrative/.env.local.",
     );
   }
+
+  // For PDFs, use Anthropic's native document block (preserves layout/structure).
+  // For plain text, send inline as a text message.
+  const userContent: unknown = documentBase64
+    ? [
+        {
+          type: "document",
+          source: {
+            type: "base64",
+            media_type: "application/pdf",
+            data: documentBase64,
+          },
+        },
+        { type: "text", text: "Parse this resume following the schema." },
+      ]
+    : `Parse this resume:\n\n${resumeText}`;
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -99,12 +117,7 @@ async function callClaudeParser(
       model: "claude-haiku-4-5-20251001",
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: `Parse this resume:\n\n${resumeText}`,
-        },
-      ],
+      messages: [{ role: "user", content: userContent }],
     }),
   });
 
@@ -218,6 +231,6 @@ export async function parseNarrativeProfileDocument(
     return naiveFallbackParse(input.documentText, input.fileName);
   }
 
-  const parsed = await callClaudeParser(input.documentText);
+  const parsed = await callClaudeParser(input.documentText, input.documentBase64);
   return mapToParserResult(parsed);
 }

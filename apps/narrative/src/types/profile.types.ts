@@ -32,7 +32,7 @@ export const timelineEntrySchema = z.object({
   organization: z.string().max(80),
   startDate: monthYearSchema,
   endDate: monthYearSchema.nullable(),
-  bullets: z.array(z.string().max(160)).min(1).max(4),
+  bullets: z.array(z.string().max(160)).max(4),
   tags: z.array(z.string().max(24)).max(5),
   isVisible: z.boolean(),
 });

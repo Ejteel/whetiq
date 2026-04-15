@@ -20,6 +20,7 @@ export async function POST(request: Request): Promise<Response> {
       result.data.documentText,
       result.data.fileName,
       result.data.mimeType,
+      result.data.documentBase64,
     );
 
     return Response.json(parserResultSchema.parse(parsed));

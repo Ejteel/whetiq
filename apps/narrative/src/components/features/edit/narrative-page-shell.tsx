@@ -115,8 +115,10 @@ export function NarrativePageShell({
 
     const nextQuery = nextParams.toString();
     const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
-    window.history.replaceState(null, "", nextUrl);
-    router.refresh();
+    // router.replace handles the basePath prefix automatically and re-renders
+    // the server component with updated searchParams. history.replaceState
+    // would strip the basePath and leave the server component unaware of the change.
+    router.replace(nextUrl);
   }
 
   async function publishDraft(): Promise<void> {

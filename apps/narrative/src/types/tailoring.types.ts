@@ -16,7 +16,8 @@ export const tailoringRequestSchema = z.object({
 });
 
 export const parserRequestSchema = z.object({
-  documentText: z.string().min(1),
+  documentText: z.string(),
+  documentBase64: z.string().optional(),
   fileName: z.string(),
   mimeType: z.string(),
 });

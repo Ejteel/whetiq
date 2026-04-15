@@ -10,7 +10,13 @@ export class ParserService {
     documentText: string,
     fileName: string,
     mimeType: string,
+    documentBase64?: string,
   ): Promise<ParserResult> {
-    return this.parseNarrativeProfile({ documentText, fileName, mimeType });
+    return this.parseNarrativeProfile({
+      documentText,
+      documentBase64,
+      fileName,
+      mimeType,
+    });
   }
 }
