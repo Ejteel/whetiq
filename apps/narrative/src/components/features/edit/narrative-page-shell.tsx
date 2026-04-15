@@ -118,7 +118,8 @@ export function NarrativePageShell({
     // router.replace handles the basePath prefix automatically and re-renders
     // the server component with updated searchParams. history.replaceState
     // would strip the basePath and leave the server component unaware of the change.
-    router.replace(nextUrl);
+    // Cast required: typed-routes mode expects RouteImpl<string>, not string.
+    router.replace(nextUrl as never);
   }
 
   async function publishDraft(): Promise<void> {
