@@ -10,7 +10,7 @@ import { profileService } from "../../../lib/services";
 
 interface ProfilePageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ ctx?: string; preview?: string }>;
+  searchParams: Promise<{ ctx?: string; preview?: string; edit?: string }>;
 }
 
 export const dynamic = "force-dynamic";
@@ -19,12 +19,17 @@ export default async function ProfilePage({
   params,
   searchParams,
 }: ProfilePageProps): Promise<ReactElement> {
-  const [{ slug }, { ctx, preview }] = await Promise.all([
+  const [{ slug }, { ctx, preview, edit }] = await Promise.all([
     params,
     searchParams,
   ]);
   const session = await getServerSession(authOptions);
-  const editMode = isOwner(session as WhetIQSession | null);
+  // In E2E/dev mode the owner opts into editing via ?edit=1 so that all
+  // other visitors (including the default landing) see the published view.
+  const editMode =
+    process.env.WHETIQ_E2E_MODE === "1"
+      ? edit === "1"
+      : isOwner(session as WhetIQSession | null);
   const isPreviewMode = editMode && preview === "visitor";
 
   try {

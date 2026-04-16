@@ -7,7 +7,7 @@ const monthYearSchema = z.object({
 
 export const identityStatementSchema = z.object({
   id: z.string(),
-  content: z.string().max(80),
+  content: z.string().max(200),
   privateLabel: z.string(),
   isActive: z.boolean(),
 });
